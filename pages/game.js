@@ -37,6 +37,7 @@ export default function Game() {
   const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [startTime, setStartTime] = useState(null);
   const [isHumanFirst, setIsHumanFirst] = useState(true);
+  const [questionHistory, setQuestionHistory] = useState([]);
   const timerRef = useRef(null);
 
   const conditions = getUniqueConditions();
@@ -61,6 +62,7 @@ export default function Game() {
     setGameStarted(true);
     setTimeLeft(timeLimit);
     setStartTime(Date.now());
+    setQuestionHistory([]);
   };
 
   // Handle timeout for each question
@@ -127,6 +129,14 @@ export default function Game() {
     const isHuman = responseToShow === currentItem.human;
     const correctGuess = (direction === 'right' && isHuman) || (direction === 'left' && !isHuman);
 
+    // Add to question history
+    setQuestionHistory(prev => [...prev, {
+      questionNumber: index + 1,
+      prompt: currentItem.prompt,
+      userChoice: direction === 'right' ? 'Human' : 'AI',
+      correct: correctGuess
+    }]);
+
     if (correctGuess) {
       setScore(prev => prev + 1);
       if (isHuman) {
@@ -142,6 +152,14 @@ export default function Game() {
 
     const isHuman = isFirstResponse ? isHumanFirst : !isHumanFirst;
     const correctGuess = isHuman;
+
+    // Add to question history
+    setQuestionHistory(prev => [...prev, {
+      questionNumber: index + 1,
+      prompt: currentItem.prompt,
+      userChoice: isFirstResponse ? (isHumanFirst ? 'Human' : 'AI') : (!isHumanFirst ? 'Human' : 'AI'),
+      correct: correctGuess
+    }]);
 
     if (correctGuess) {
       setScore(prev => prev + 1);
@@ -245,7 +263,7 @@ export default function Game() {
     return (
       <div style={{ 
         textAlign: 'center', 
-        marginTop: 100,
+        marginTop: 50,
         color: darkMode ? '#fff' : '#000',
         fontSize: `${fontSize}px`
       }}>
@@ -253,6 +271,59 @@ export default function Game() {
         <div style={{ marginTop: 20 }}>
           <p>Human Responses Correctly Identified: {humanCorrect} out of {shuffledData.length}</p>
         </div>
+        
+        {/* Results Table */}
+        <div style={{ 
+          marginTop: 30,
+          maxWidth: '1200px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          overflowX: 'auto'
+        }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            backgroundColor: darkMode ? '#333' : '#fff',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+          }}>
+            <thead>
+              <tr style={{ backgroundColor: darkMode ? '#444' : '#f5f5f5' }}>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: `1px solid ${darkMode ? '#555' : '#ddd'}` }}>
+                  Question #
+                </th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: `1px solid ${darkMode ? '#555' : '#ddd'}` }}>
+                  Question Prompt
+                </th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: `1px solid ${darkMode ? '#555' : '#ddd'}` }}>
+                  Your Choice
+                </th>
+                <th style={{ padding: '12px', textAlign: 'left', borderBottom: `1px solid ${darkMode ? '#555' : '#ddd'}` }}>
+                  Result
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {questionHistory.map((question, idx) => (
+                <tr key={idx} style={{ borderBottom: `1px solid ${darkMode ? '#444' : '#eee'}` }}>
+                  <td style={{ padding: '12px' }}>{question.questionNumber}</td>
+                  <td style={{ padding: '12px', maxWidth: '400px' }}>{question.prompt}</td>
+                  <td style={{ padding: '12px' }}>{question.userChoice}</td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{
+                      color: question.correct ? '#4CAF50' : '#f44336',
+                      fontWeight: 'bold'
+                    }}>
+                      {question.correct ? '✓ Correct' : '✗ Incorrect'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <button
           onClick={() => {
             setGameStarted(false);
@@ -266,12 +337,13 @@ export default function Game() {
             setResponseToShow(null);
             setTimeLeft(timeLimit);
             setStartTime(null);
+            setQuestionHistory([]);
             if (timerRef.current) {
               clearInterval(timerRef.current);
             }
           }}
           style={{
-            marginTop: 20,
+            marginTop: 30,
             padding: '10px 20px',
             fontSize: `${fontSize}px`,
             borderRadius: '8px',
@@ -313,37 +385,57 @@ export default function Game() {
       )}
 
       {gameMode === 'swipe' ? (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
-          <AnimatePresence>
-            {responseToShow && (
-              <motion.div
-                key={index}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                onDragEnd={(e, info) => {
-                  if (info.offset.x > 100) handleSwipe('right');
-                  else if (info.offset.x < -100) handleSwipe('left');
-                }}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                style={{
-                  width: 400,
-                  padding: 20,
-                  background: darkMode ? '#333' : '#fff',
-                  border: '1px solid #ddd',
-                  borderRadius: 12,
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                  cursor: 'grab'
-                }}
-              >
-                {responseToShow}
-                <p style={{ fontSize: 12, color: '#999', marginTop: 10 }}>
-                  Swipe → if Human, ← if AI (or use arrow keys)
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 40, gap: '20px' }}>
+          {/* Robot icon on the left */}
+          <div style={{
+            fontSize: '48px',
+            opacity: 0.7,
+            color: '#666'
+          }}>
+            🤖
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <AnimatePresence>
+              {responseToShow && (
+                <motion.div
+                  key={index}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDragEnd={(e, info) => {
+                    if (info.offset.x > 100) handleSwipe('right');
+                    else if (info.offset.x < -100) handleSwipe('left');
+                  }}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    width: 400,
+                    padding: 20,
+                    background: darkMode ? '#333' : '#fff',
+                    border: '1px solid #ddd',
+                    borderRadius: 12,
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                    cursor: 'grab'
+                  }}
+                >
+                  {responseToShow}
+                  <p style={{ fontSize: 12, color: '#999', marginTop: 10 }}>
+                    Swipe → if Human, ← if AI (or use arrow keys)
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Human icon on the right */}
+          <div style={{
+            fontSize: '48px',
+            opacity: 0.7,
+            color: '#666'
+          }}>
+            👤
+          </div>
         </div>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: 40 }}>
