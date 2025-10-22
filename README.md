@@ -1,6 +1,8 @@
-# 🤖 Turing Test Swipe App
+# 🤖 Turing Test App
 
-Can you tell which response is from a human and which is from AI?
+**Interactive Turing Test Game - Can you tell which response is from a human and which is from AI?**
+
+A gamified mental health awareness tool that challenges users to distinguish between human and AI-generated responses to mental health prompts.
 
 This app is a playful, thought-provoking mental health awareness tool that gamifies Alan Turing's famous question — *"Can machines think?"* — in the context of lived mental health experiences. Users swipe through narratives in response to mental health prompts and try to guess whether they were written by a person with lived experience or a large language model (LLM).
 
@@ -10,7 +12,9 @@ This app is a playful, thought-provoking mental health awareness tool that gamif
 
 ## 🔥 Live Demo
 
-👉 https://turing-app.vercel.app
+👉 **https://turing-app.vercel.app**
+
+Deployed on Vercel with automatic deployments from the main branch.
 
 ---
 
@@ -38,13 +42,27 @@ Turing_APP/
 
 ---
 
+## 🏷️ Topics & Technologies
+
+- **turing-machine** - Interactive implementation of the Turing Test
+- **vercel** - Deployed and hosted on Vercel platform
+- **Next.js** - React framework for web applications
+- **Mental Health** - Awareness and education tool
+- **AI/ML** - Human vs AI detection game
+- **Interactive Game** - Swipe and click-based gameplay
+
+---
+
 ## App Features
 
 ### Gameplay
+- **Two Game Modes:**
+  - **Swipe Mode**: Swipe right for Human, left for AI (with visual indicators 🤖👤)
+  - **Click Mode**: Choose between two responses (randomized order)
 - 15 randomized prompts per session
-- User guesses: Human (➡️ swipe right) or AI (⬅️ swipe left)
-- Feedback after each round and a score at the end
+- Detailed results table showing question-by-question performance
 - Dark mode toggle, font size slider, timer (30–90s/question)
+- Human response identification tracking
 
 ### Prompt Filters
 - Users can filter prompts by mental health condition:
