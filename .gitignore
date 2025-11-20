@@ -1,2 +1,6 @@
 node_modules
 .next
+.env*
+!.env.local.example
+service-account-key.json
+.DS_Store

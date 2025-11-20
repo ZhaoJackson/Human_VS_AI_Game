@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { data } from '../data/turing_data';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { data } from '../src/features/game/data/turing_data';
 
 const getUniqueConditions = () => {
   const all = data
@@ -16,6 +16,8 @@ export default function Home() {
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
   const conditions = useMemo(getUniqueConditions, []);
+  const { user, error, isLoading } = useUser();
+  const authError = router.query.auth === 'domain';
 
   const handleStart = () => {
     const query = selectedTheme ? `?theme=${encodeURIComponent(selectedTheme)}` : '';
@@ -31,9 +33,91 @@ export default function Home() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 24
+        gap: 24,
+        position: 'relative'
       }}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 20,
+          right: 24,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12
+        }}
+      >
+        {isLoading ? (
+          <span style={{ color: '#475467', fontSize: '0.9rem' }}>Checking session…</span>
+        ) : user ? (
+          <>
+            <span style={{ fontSize: '0.9rem', color: '#475467' }}>
+              Signed in as <strong>{user.email}</strong>
+            </span>
+            <a
+              href="/api/auth/logout"
+              style={{
+                padding: '8px 16px',
+                borderRadius: 999,
+                border: '1px solid #d0d7de',
+                color: '#475467',
+                textDecoration: 'none',
+                fontSize: '0.9rem'
+              }}
+            >
+              Log out
+            </a>
+          </>
+        ) : (
+          <a
+            href="/api/auth/login"
+            style={{
+              padding: '10px 18px',
+              borderRadius: 999,
+              backgroundColor: '#0070f3',
+              color: '#fff',
+              textDecoration: 'none',
+              fontSize: '0.95rem',
+              boxShadow: '0 12px 24px rgba(0,112,243,0.25)'
+            }}
+          >
+            Sign in with Columbia Google
+          </a>
+        )}
+      </div>
+
+      {error && (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 520,
+            marginBottom: 16,
+            padding: '12px 16px',
+            borderRadius: 12,
+            background: '#fee2e2',
+            color: '#b91c1c'
+          }}
+        >
+          Unable to load session. Please refresh and try again.
+        </div>
+      )}
+
+      {authError && (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 520,
+            marginBottom: 16,
+            padding: '12px 16px',
+            borderRadius: 12,
+            background: '#fef3c7',
+            color: '#b45309'
+          }}
+        >
+          Access is limited to <code>@columbia.edu</code> accounts. Please sign in with your Columbia email.
+        </div>
+      )}
+
       <div>
         <h1>🤖 Turing Test Game</h1>
         <p>Play a single round, review the outcome, then decide what to do next.</p>
@@ -118,7 +202,7 @@ export default function Home() {
             <span role="img" aria-label="sparkles">
               ✨
             </span>{' '}
-            After each round you can leave a reflection or play again with a fresh prompt.
+            After each round you’ll complete a short Google Form before unlocking the next round.
           </p>
         </div>
       </div>
@@ -141,12 +225,23 @@ export default function Home() {
         ▶ Start Round
       </button>
 
-      <p style={{ color: '#667085' }}>
-        Prefer the old flow?{' '}
-        <Link href="/game" style={{ color: '#0070f3', textDecoration: 'underline' }}>
-          Jump straight to the game
-        </Link>
-      </p>
+      <div
+        style={{
+          maxWidth: 520,
+          width: '100%',
+          borderRadius: 12,
+          border: '1px solid #e4e7ec',
+          padding: 16,
+          background: '#fff8e6',
+          color: '#7a4b00',
+          fontSize: '0.9rem',
+          lineHeight: 1.6
+        }}
+      >
+        <strong style={{ display: 'block', marginBottom: 4 }}>Privacy notice</strong>
+        We log round stats (email, UNI, score, timing) to a Columbia-owned Google Sheet so we can audit the
+        experiment. Reach us at privacy@yourdomain.edu with questions or deletion requests.
+      </div>
     </div>
   );
 }

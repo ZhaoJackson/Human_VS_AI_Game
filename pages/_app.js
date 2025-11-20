@@ -1,7 +1,8 @@
-import { GameProvider } from '../contexts/GameContext';
+import { UserProvider } from '@auth0/nextjs-auth0/client';
+import { GameProvider } from '../src/features/game/contexts/GameContext';
 import { useEffect } from 'react';
-import { useGame } from '../contexts/GameContext';
-import '../styles/globals.css';
+import { useGame } from '../src/features/game/contexts/GameContext';
+import '../src/styles/globals.css';
 
 function DarkModeHandler() {
   const { darkMode } = useGame();
@@ -19,11 +20,13 @@ function DarkModeHandler() {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <GameProvider>
-      <DarkModeHandler />
-      <Component {...pageProps} />
-    </GameProvider>
+    <UserProvider user={pageProps.user}>
+      <GameProvider>
+        <DarkModeHandler />
+        <Component {...pageProps} />
+      </GameProvider>
+    </UserProvider>
   );
 }
 
-export default MyApp; 
+export default MyApp;

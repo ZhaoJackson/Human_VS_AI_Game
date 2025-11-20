@@ -1,13 +1,6 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export',
-  images: {
-    unoptimized: true,
-  },
-  // Optional: Change the output directory from 'out' to 'dist'
-  // distDir: 'dist',
-}
+const nextConfig = {};
 
-module.exports = nextConfig
+module.exports = nextConfig;
 
 

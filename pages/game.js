@@ -1,12 +1,15 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { data } from '../data/turing_data';
-import { useGame } from '../contexts/GameContext';
-import GameSettings from '../components/GameSettings';
+import { withPageAuthRequired } from '@auth0/nextjs-auth0';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { data } from '../src/features/game/data/turing_data';
+import { useGame } from '../src/features/game/contexts/GameContext';
+import GameSettings from '../src/components/game/GameSettings';
 
 export default function Game() {
   const { darkMode, gameMode, timeLimit, fontSize } = useGame();
+  const { user } = useUser();
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -23,11 +26,82 @@ export default function Game() {
   const [startTime, setStartTime] = useState(null);
   const [isHumanFirst, setIsHumanFirst] = useState(true);
   const [questionHistory, setQuestionHistory] = useState([]);
-  const [roundReflection, setRoundReflection] = useState('');
-  const [messageInBottle, setMessageInBottle] = useState('');
-  const [reflectionLog, setReflectionLog] = useState([]);
-  const [bottleMessages, setBottleMessages] = useState([]);
+  const [roundId, setRoundId] = useState('');
+  const [loggingState, setLoggingState] = useState('idle'); // idle | pending | success | error | duplicate
+  const [logError, setLogError] = useState('');
+  const [formCompleted, setFormCompleted] = useState(false);
+  const [roundIdCopied, setRoundIdCopied] = useState(false);
+  const [lastLoggedRoundId, setLastLoggedRoundId] = useState('');
   const timerRef = useRef(null);
+
+  const generateRoundId = useCallback(() => {
+    return crypto.randomUUID();
+  }, []);
+
+  const clearFormQuery = useCallback(() => {
+    if (!router.isReady) return;
+    if (!('form' in router.query || 'rid' in router.query)) return;
+
+    const updatedQuery = { ...router.query };
+    delete updatedQuery.form;
+    delete updatedQuery.rid;
+
+    router.replace(
+      { pathname: router.pathname, query: updatedQuery },
+      undefined,
+      { shallow: true }
+    );
+  }, [router]);
+
+  const totalQuestions = questionHistory.length || shuffledData.length;
+
+  const averageTimeSeconds = useMemo(() => {
+    if (!questionHistory.length) return 0;
+    const totalTime = questionHistory.reduce((acc, q) => acc + (q.timeTaken || 0), 0);
+    return questionHistory.length ? Number((totalTime / questionHistory.length).toFixed(2)) : 0;
+  }, [questionHistory]);
+
+  const accuracyPercent = useMemo(() => {
+    if (!totalQuestions) return 0;
+    return Math.round((score / totalQuestions) * 100);
+  }, [score, totalQuestions]);
+
+  const feedbackFormUrl = useMemo(() => {
+    if (!roundId) return '';
+    const baseUrl = process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL;
+    if (!baseUrl) return '';
+
+    try {
+      const url = new URL(baseUrl);
+      const email = user?.email || '';
+      const firstName = user?.given_name || (user?.name ? user.name.split(' ')[0] : '');
+      const lastName = user?.family_name || (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
+      const localPart = email ? email.split('@')[0] : '';
+      const themeLabel = selectedTheme || 'Mixed prompts';
+
+      const mappings = {
+        email: process.env.NEXT_PUBLIC_FEEDBACK_FORM_EMAIL_FIELD,
+        firstName: process.env.NEXT_PUBLIC_FEEDBACK_FORM_FIRST_NAME_FIELD,
+        lastName: process.env.NEXT_PUBLIC_FEEDBACK_FORM_LAST_NAME_FIELD,
+        uni: process.env.NEXT_PUBLIC_FEEDBACK_FORM_UNI_FIELD,
+        category: process.env.NEXT_PUBLIC_FEEDBACK_FORM_CATEGORY_FIELD || 'category',
+        roundId: process.env.NEXT_PUBLIC_FEEDBACK_FORM_ROUND_ID_FIELD || 'round_id',
+      };
+
+      if (mappings.email && email) url.searchParams.set(mappings.email, email);
+      if (mappings.firstName && firstName) url.searchParams.set(mappings.firstName, firstName);
+      if (mappings.lastName && lastName) url.searchParams.set(mappings.lastName, lastName);
+      if (mappings.uni && localPart) url.searchParams.set(mappings.uni, localPart);
+
+      url.searchParams.set(mappings.category, themeLabel);
+      url.searchParams.set(mappings.roundId, roundId);
+
+      return url.toString();
+    } catch (error) {
+      console.warn('Invalid NEXT_PUBLIC_FEEDBACK_FORM_URL', error);
+      return '';
+    }
+  }, [roundId, selectedTheme, user]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -38,6 +112,66 @@ export default function Game() {
       setSelectedTheme(incomingTheme);
     }
   }, [router.isReady, router.query.theme, selectedTheme]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleStorage = (event) => {
+      if (event.key !== 'turing:formStatus' || !event.newValue) return;
+      try {
+        const payload = JSON.parse(event.newValue);
+        if (payload.status === 'ok' && payload.rid && payload.rid === roundId) {
+          setFormCompleted(true);
+        }
+      } catch (error) {
+        console.warn('Unable to parse form status from storage', error);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [roundId]);
+
+  useEffect(() => {
+    if (!roundIdCopied) return;
+    const timeout = setTimeout(() => setRoundIdCopied(false), 2000);
+    return () => clearTimeout(timeout);
+  }, [roundIdCopied]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !roundId) return;
+    const stored = window.localStorage.getItem('turing:formStatus');
+    if (!stored) return;
+
+    try {
+      const payload = JSON.parse(stored);
+      if (payload.status === 'ok' && payload.rid === roundId) {
+        setFormCompleted(true);
+      }
+    } catch (error) {
+      console.warn('Unable to hydrate form status from storage', error);
+    }
+  }, [roundId]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const formParam = Array.isArray(router.query.form) ? router.query.form[0] : router.query.form;
+    const ridParam = Array.isArray(router.query.rid) ? router.query.rid[0] : router.query.rid;
+
+    if (formParam === 'ok' && ridParam) {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('turing:formStatus', JSON.stringify({
+          status: 'ok',
+          rid: ridParam,
+          at: Date.now(),
+        }));
+      }
+
+      if (roundId && ridParam === roundId) {
+        setFormCompleted(true);
+      }
+    }
+  }, [router.isReady, router.query.form, router.query.rid, roundId]);
 
   const startGame = () => {
     const filtered = selectedTheme
@@ -60,8 +194,17 @@ export default function Game() {
     setTimeLeft(timeLimit);
     setStartTime(Date.now());
     setQuestionHistory([]);
-    setRoundReflection('');
-    setMessageInBottle('');
+    clearFormQuery();
+    const newRound = generateRoundId();
+    setRoundId(newRound);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('turing:lastRoundId', newRound);
+      window.localStorage.removeItem('turing:formStatus');
+    }
+    setLoggingState('idle');
+    setLogError('');
+    setFormCompleted(false);
+    setLastLoggedRoundId('');
   };
 
   // Handle timeout for each question
@@ -99,7 +242,7 @@ export default function Game() {
       setIsHumanFirst(Math.random() > 0.5);
       setTimeLeft(timeLimit);
       setStartTime(Date.now());
-      
+
       // Clear and restart timer for new question
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -162,7 +305,7 @@ export default function Game() {
     const correctGuess = isHuman;
     const userChoice = isFirstResponse
       ? (isHumanFirst ? 'Human' : 'AI')
-      : (!isHumanFirst ? 'Human' : 'AI');
+      : (isHumanFirst ? 'AI' : 'Human');
     const timeTaken = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
 
     if (timerRef.current) {
@@ -189,29 +332,6 @@ export default function Game() {
     setIndex(prev => prev + 1);
   };
 
-  const persistRoundNotes = () => {
-    const trimmedReflection = roundReflection.trim();
-    const trimmedMessage = messageInBottle.trim();
-    const timestamp = new Date().toISOString();
-
-    if (trimmedReflection) {
-      setReflectionLog(prev => [
-        ...prev,
-        { text: trimmedReflection, theme: selectedTheme || 'All Topics', createdAt: timestamp }
-      ]);
-    }
-
-    if (trimmedMessage) {
-      setBottleMessages(prev => [
-        ...prev,
-        { text: trimmedMessage, createdAt: timestamp }
-      ]);
-    }
-
-    setRoundReflection('');
-    setMessageInBottle('');
-  };
-
   const resetSessionState = () => {
     setGameStarted(false);
     setFinished(false);
@@ -224,31 +344,157 @@ export default function Game() {
     setTimeLeft(timeLimit);
     setStartTime(null);
     setQuestionHistory([]);
+    setRoundId('');
+    setLoggingState('idle');
+    setLogError('');
+    setFormCompleted(false);
+    setLastLoggedRoundId('');
+    clearFormQuery();
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('turing:lastRoundId');
+      window.localStorage.removeItem('turing:formStatus');
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
   };
 
   const handlePlayAgain = () => {
-    persistRoundNotes();
+    if (!formCompleted) return;
     startGame();
   };
 
   const handleReturnHome = () => {
-    persistRoundNotes();
     resetSessionState();
     router.push('/');
   };
 
-  const handleSaveReflection = () => {
-    persistRoundNotes();
+  const handleOpenFeedbackForm = () => {
+    if (!feedbackFormUrl || typeof window === 'undefined') return;
+    window.open(feedbackFormUrl, '_blank', 'noopener');
   };
+
+  const handleRetryLog = () => {
+    setLoggingState('idle');
+    setLogError('');
+  };
+
+  const handleCopyRoundId = async () => {
+    if (!roundId || typeof navigator === 'undefined' || !navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(roundId);
+      setRoundIdCopied(true);
+    } catch (error) {
+      console.warn('Unable to copy round ID', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!finished || !roundId) return;
+    if (!totalQuestions) return;
+    if (lastLoggedRoundId === roundId) return;
+    if (loggingState !== 'idle') return;
+
+    const controller = new AbortController();
+    const accuracyForApi = Number((totalQuestions ? (score / totalQuestions) * 100 : 0).toFixed(2));
+    const avgTimeForApi = Number(averageTimeSeconds.toFixed(2));
+    const category = selectedTheme || 'Mixed prompts';
+
+    const logRoundResults = async () => {
+      console.log('🟢 [FRONTEND] Starting to log round results...');
+      console.log('🟢 [FRONTEND] Round ID:', roundId);
+      console.log('🟢 [FRONTEND] Payload:', {
+        roundId,
+        category,
+        numQuestions: totalQuestions,
+        score,
+        accuracyPct: accuracyForApi,
+        avgTimeSeconds: avgTimeForApi,
+      });
+
+      setLoggingState('pending');
+
+      // Create timeout for the request
+      const timeoutId = setTimeout(() => {
+        console.error('🔴 [FRONTEND] Request timeout after 10 seconds');
+        controller.abort();
+      }, 10000);
+
+      try {
+        console.log('🟢 [FRONTEND] Sending POST request to /api/submit-data...');
+        const response = await fetch('/api/submit-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            roundId,
+            category,
+            numQuestions: totalQuestions,
+            score,
+            accuracyPct: accuracyForApi,
+            avgTimeSeconds: avgTimeForApi,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        console.log('🟢 [FRONTEND] Response received:', response.status, response.statusText);
+
+        if (!response.ok) {
+          const message = await response.text();
+          console.error('🔴 [FRONTEND] Response not OK:', message);
+          throw new Error(message || 'Failed to log results');
+        }
+
+        const data = await response.json();
+        console.log('🟢 [FRONTEND] Response data:', data);
+
+        if (controller.signal.aborted) return;
+
+        if (data.status === 'duplicate') {
+          console.log('⚠️  [FRONTEND] Duplicate round detected');
+          setLoggingState('duplicate');
+        } else {
+          console.log('✅ [FRONTEND] Round logged successfully');
+          setLoggingState('success');
+        }
+        setLastLoggedRoundId(roundId);
+        setLogError('');
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (controller.signal.aborted) {
+          console.error('🔴 [FRONTEND] Request was aborted/timed out');
+          setLoggingState('error');
+          setLogError('Request timed out after 10 seconds');
+          return;
+        }
+        console.error('🔴 [FRONTEND] Error logging round:', error);
+        console.error('🔴 [FRONTEND] Error message:', error.message);
+        setLoggingState('error');
+        setLogError(error.message);
+      }
+    };
+
+    logRoundResults();
+
+    return () => controller.abort();
+  }, [
+    averageTimeSeconds,
+    finished,
+    lastLoggedRoundId,
+    loggingState,
+    roundId,
+    score,
+    selectedTheme,
+    totalQuestions,
+  ]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (!gameStarted || finished) return;
-      
+
       if (gameMode === 'swipe') {
         if (e.key === 'ArrowRight') handleSwipe('right');
         else if (e.key === 'ArrowLeft') handleSwipe('left');
@@ -261,7 +507,7 @@ export default function Game() {
 
   if (!gameStarted) {
     return (
-      <div style={{ 
+      <div style={{
         position: 'relative',
         minHeight: '100vh',
         width: '100%',
@@ -290,9 +536,9 @@ export default function Game() {
           </button>
         </div>
         {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
-        
-        <div style={{ 
-          textAlign: 'center', 
+
+        <div style={{
+          textAlign: 'center',
           marginTop: '12vh',
           color: darkMode ? '#fff' : '#101828',
           fontSize: `${fontSize * 0.95}px`,
@@ -334,7 +580,7 @@ export default function Game() {
                 <strong>2.</strong> Use the swipe gesture or the arrow keys <code>←</code> / <code>→</code>.
               </li>
               <li>
-                <strong>3.</strong> After the round, leave a quick reflection or message in a bottle.
+                <strong>3.</strong> After the round, complete the Google feedback form to unlock the next game.
               </li>
             </ul>
             <div style={{
@@ -343,15 +589,15 @@ export default function Game() {
               flexWrap: 'wrap',
               gap: 12
             }}>
-          <button
-            onClick={startGame}
-            style={{
+              <button
+                onClick={startGame}
+                style={{
                   flex: '1 1 180px',
                   padding: '14px 24px',
                   fontSize: `${fontSize * 0.9}px`,
                   borderRadius: 999,
-              backgroundColor: '#0070f3',
-              color: 'white',
+                  backgroundColor: '#0070f3',
+                  color: 'white',
                   border: 'none',
                   cursor: 'pointer',
                   boxShadow: '0 16px 30px rgba(0,112,243,0.35)'
@@ -368,12 +614,12 @@ export default function Game() {
                   borderRadius: 999,
                   backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
                   color: darkMode ? '#e2e8f0' : '#475467',
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
                 ← Pick a new topic
-          </button>
+              </button>
             </div>
           </div>
         </div>
@@ -382,8 +628,18 @@ export default function Game() {
   }
 
   if (finished) {
-    const totalQuestions = questionHistory.length || shuffledData.length;
-    const accuracy = totalQuestions ? Math.round((score / totalQuestions) * 100) : 0;
+    const themeLabel = selectedTheme || 'Mixed prompts';
+    const averageDisplay = averageTimeSeconds ? `${averageTimeSeconds.toFixed(1)}s` : '—';
+    const playAgainDisabled = !formCompleted;
+    const feedbackButtonLabel = formCompleted ? 'Reopen Feedback Form' : 'Open Feedback Form';
+    const loggingDescriptions = {
+      idle: 'Preparing to log this round to Google Sheets…',
+      pending: 'Logging round results to Google Sheets…',
+      success: 'Round logged successfully to Google Sheets.',
+      duplicate: 'This round was already logged earlier—no duplicate entry was created.',
+      error: logError ? `Logging failed: ${logError}` : 'Logging failed. Please try again.',
+    };
+    const loggingDescription = loggingDescriptions[loggingState] || loggingDescriptions.idle;
 
     return (
       <div
@@ -393,7 +649,7 @@ export default function Game() {
           width: '100%',
           padding: '40px 20px 80px',
           background: darkMode ? '#020617' : '#f5f7fb',
-          color: darkMode ? '#e2e8f0' : '#0f172a'
+          color: darkMode ? '#e2e8f0' : '#0f172a',
         }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 32 }}>
@@ -405,14 +661,13 @@ export default function Game() {
               boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
               border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
               display: 'grid',
-              gap: 28
+              gap: 28,
             }}
           >
             <div>
               <h1 style={{ fontSize: '2.25rem', marginBottom: 12 }}>Round complete 🎯</h1>
               <p style={{ margin: 0, color: darkMode ? '#c7d2fe' : '#475467' }}>
-                {selectedTheme ? `Theme: ${selectedTheme}` : 'Theme: Mixed prompts'} · Accuracy {accuracy}% ·{' '}
-                {humanCorrect} human answers spotted
+                Theme: {themeLabel} · Accuracy {accuracyPercent}% · {humanCorrect} human answers spotted
               </p>
             </div>
 
@@ -420,14 +675,14 @@ export default function Game() {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: 16
+                gap: 16,
               }}
             >
               <div
                 style={{
                   padding: '18px 20px',
                   borderRadius: 18,
-                  background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)'
+                  background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
                 }}
               >
                 <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>Score</p>
@@ -438,7 +693,7 @@ export default function Game() {
                 style={{
                   padding: '18px 20px',
                   borderRadius: 18,
-                  background: darkMode ? 'rgba(22,163,74,0.2)' : 'rgba(34,197,94,0.12)'
+                  background: darkMode ? 'rgba(22,163,74,0.2)' : 'rgba(34,197,94,0.12)',
                 }}
               >
                 <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
@@ -450,98 +705,195 @@ export default function Game() {
                 style={{
                   padding: '18px 20px',
                   borderRadius: 18,
-                  background: darkMode ? 'rgba(244,114,182,0.18)' : 'rgba(236,72,153,0.12)'
+                  background: darkMode ? 'rgba(244,114,182,0.18)' : 'rgba(236,72,153,0.12)',
                 }}
               >
                 <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
                   Avg time
                 </p>
-                <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>
-                  {questionHistory.length
-                    ? `${Math.round(questionHistory.reduce((acc, q) => acc + (q.timeTaken || 0), 0) / questionHistory.length)}s`
-                    : '—'}
-                </p>
+                <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{averageDisplay}</p>
               </div>
-        </div>
-        
+            </div>
+
             <div
               style={{
                 display: 'grid',
                 gap: 20,
                 background: darkMode ? 'rgba(15,23,42,0.55)' : '#f8fafc',
                 borderRadius: 20,
-                padding: '24px 24px 28px'
+                padding: '24px 24px 28px',
               }}
             >
-              <div>
-                <h2 style={{ marginBottom: 8 }}>Reflect on this round</h2>
-                <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085' }}>
-                  What surprised you? Capture it here to track your intuition over time.
-                </p>
-              </div>
-              <textarea
-                value={roundReflection}
-                onChange={(e) => setRoundReflection(e.target.value)}
-                placeholder="I noticed that..."
-                rows={3}
-                style={{
-                  width: '100%',
-                  borderRadius: 16,
-                  padding: '16px 18px',
-                  border: '1px solid rgba(148,163,184,0.4)',
-                  background: darkMode ? 'rgba(15,23,42,0.85)' : '#fff',
-                  color: 'inherit',
-                  fontSize: '0.95rem',
-                  resize: 'vertical'
-                }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <h2 style={{ marginBottom: 8 }}>Submit required feedback</h2>
+                  <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085' }}>
+                    We collect reflections through a Google Form. Submitting it unlocks the next round.
+                  </p>
+                </div>
 
-              <div>
-                <h3 style={{ marginBottom: 8 }}>Message in a bottle</h3>
-                <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085' }}>
-                  Leave a note for future players (optional).
-                </p>
-              </div>
-              <textarea
-                value={messageInBottle}
-                onChange={(e) => setMessageInBottle(e.target.value)}
-                placeholder="To everyone playing after me..."
-                rows={2}
-                style={{
-            width: '100%',
-                  borderRadius: 16,
-                  padding: '16px 18px',
-                  border: '1px solid rgba(148,163,184,0.4)',
-                  background: darkMode ? 'rgba(15,23,42,0.85)' : '#fff',
-                  color: 'inherit',
-                  fontSize: '0.95rem',
-                  resize: 'vertical'
-                }}
-              />
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 4 }}>
-                <button
-                  onClick={handleSaveReflection}
+                <div
                   style={{
-                    padding: '12px 24px',
-                    borderRadius: 999,
-                    border: 'none',
-                    backgroundColor: '#22c55e',
-                    color: '#fff',
-                    cursor: 'pointer'
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 12,
                   }}
                 >
-                  💾 Save reflection
-                </button>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 16px',
+                      borderRadius: 999,
+                      background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.12)',
+                      color: darkMode ? '#c7d2fe' : '#1d4ed8',
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Round ID: <code style={{ fontSize: 13 }}>{roundId || 'pending'}</code>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyRoundId}
+                    style={{
+                      padding: '10px 18px',
+                      borderRadius: 999,
+                      border: '1px solid rgba(148,163,184,0.4)',
+                      background: 'transparent',
+                      color: darkMode ? '#e2e8f0' : '#475467',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {roundIdCopied ? 'Copied!' : 'Copy round ID'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                  <button
+                    type="button"
+                    onClick={handleOpenFeedbackForm}
+                    disabled={!feedbackFormUrl}
+                    style={{
+                      padding: '12px 28px',
+                      borderRadius: 999,
+                      border: 'none',
+                      backgroundColor: feedbackFormUrl ? '#2563eb' : 'rgba(148,163,184,0.4)',
+                      color: '#fff',
+                      cursor: feedbackFormUrl ? 'pointer' : 'not-allowed',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {feedbackButtonLabel}
+                  </button>
+                  {feedbackFormUrl && (
+                    <a
+                      href={feedbackFormUrl}
+                      target="_blank"
+                      rel="noopener"
+                      style={{
+                        padding: '12px 24px',
+                        borderRadius: 999,
+                        border: '1px solid rgba(148,163,184,0.6)',
+                        color: darkMode ? '#e2e8f0' : '#475467',
+                        textDecoration: 'none',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Open in current tab
+                    </a>
+                  )}
+                </div>
+
+                {!feedbackFormUrl && (
+                  <p style={{ margin: 0, color: '#f97316', fontSize: '0.9rem' }}>
+                    Configure `NEXT_PUBLIC_FEEDBACK_FORM_URL` and field mappings to enable the feedback form button.
+                  </p>
+                )}
+
+                <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#475467', fontSize: '0.95rem' }}>
+                  {formCompleted
+                    ? 'Feedback received! “Play another round” is unlocked.'
+                    : 'Submit the Google Form to unlock “Play another round.”'}
+                </p>
+              </div>
+
+              <div
+                style={{
+                  padding: '20px 24px',
+                  borderRadius: 16,
+                  background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
+                  border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid rgba(148,163,184,0.2)',
+                  display: 'grid',
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <strong>Round logging status</strong>
+                  <span
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                      textTransform: 'uppercase',
+                      background:
+                        loggingState === 'success' || loggingState === 'duplicate'
+                          ? (darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.18)')
+                          : loggingState === 'error'
+                            ? (darkMode ? 'rgba(239,68,68,0.25)' : 'rgba(248,113,113,0.18)')
+                            : (darkMode ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.18)'),
+                      color:
+                        loggingState === 'success' || loggingState === 'duplicate'
+                          ? '#15803d'
+                          : loggingState === 'error'
+                            ? '#b91c1c'
+                            : darkMode
+                              ? '#c7d2fe'
+                              : '#1d4ed8',
+                    }}
+                  >
+                    {loggingState.toUpperCase()}
+                  </span>
+                </div>
+                <p style={{ margin: 0, color: darkMode ? '#cbd5f5' : '#475467', fontSize: '0.95rem' }}>
+                  {loggingDescription}
+                </p>
+                {loggingState === 'error' && (
+                  <button
+                    type="button"
+                    onClick={handleRetryLog}
+                    style={{
+                      justifySelf: 'start',
+                      padding: '10px 20px',
+                      borderRadius: 999,
+                      border: '1px solid rgba(248,113,113,0.6)',
+                      background: darkMode ? 'rgba(248,113,113,0.2)' : 'rgba(248,113,113,0.12)',
+                      color: darkMode ? '#fecaca' : '#b91c1c',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Retry logging
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                 <button
                   onClick={handlePlayAgain}
+                  disabled={playAgainDisabled}
                   style={{
                     padding: '12px 24px',
                     borderRadius: 999,
                     border: 'none',
-                    backgroundColor: '#2563eb',
+                    backgroundColor: playAgainDisabled ? 'rgba(148,163,184,0.35)' : '#2563eb',
                     color: '#fff',
-                    cursor: 'pointer'
+                    cursor: playAgainDisabled ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
                   }}
                 >
                   🔁 Play another round
@@ -553,77 +905,21 @@ export default function Game() {
                     borderRadius: 999,
                     border: 'none',
                     backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                    color: 'inherit',
-                    cursor: 'pointer'
+                    color: darkMode ? '#e2e8f0' : '#475467',
+                    cursor: 'pointer',
+                    fontWeight: 500,
                   }}
                 >
                   🏠 Back to landing
                 </button>
               </div>
             </div>
-          </section>
 
-          {(reflectionLog.length > 0 || bottleMessages.length > 0) && (
-            <section
-              style={{
-                borderRadius: 20,
-                padding: '24px 28px',
-                background: darkMode ? 'rgba(15,23,42,0.6)' : '#fff',
-                boxShadow: darkMode ? '0 20px 40px rgba(15,23,42,0.4)' : '0 20px 40px rgba(15,23,42,0.1)',
-                border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
-                display: 'grid',
-                gap: 20
-              }}
-            >
-              {reflectionLog.length > 0 && (
-                <div>
-                  <h2 style={{ marginBottom: 12 }}>Saved reflections</h2>
-                  <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 12 }}>
-                    {reflectionLog.map((entry, idx) => (
-                      <li
-                        key={`${entry.createdAt}-${idx}`}
-                        style={{
-                          padding: '14px 16px',
-                          borderRadius: 16,
-                          background: darkMode ? 'rgba(30,41,59,0.7)' : '#f8fafc',
-                          display: 'grid',
-                          gap: 4
-                        }}
-                      >
-                        <span style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>
-                          {entry.theme} · {new Date(entry.createdAt).toLocaleString()}
-                        </span>
-                        <span>{entry.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {bottleMessages.length > 0 && (
-                <div>
-                  <h2 style={{ marginBottom: 12 }}>Messages in a bottle</h2>
-                  <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 12 }}>
-                    {bottleMessages.map((entry, idx) => (
-                      <li
-                        key={`${entry.createdAt}-${idx}`}
-                        style={{
-                          padding: '14px 16px',
-                          borderRadius: 16,
-                          background: darkMode ? 'rgba(30,41,59,0.7)' : '#fefce8',
-                          border: darkMode ? '1px solid rgba(148,163,184,0.2)' : '1px solid #facc15'
-                        }}
-                      >
-                        <span style={{ display: 'block', marginBottom: 4, fontSize: 13, opacity: 0.75 }}>
-                          Dropped {new Date(entry.createdAt).toLocaleString()}
-                        </span>
-                        <span>{entry.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
-          )}
+            <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085', fontSize: '0.85rem' }}>
+              We store round stats (email, UNI, score, accuracy, timing) to improve the program and audit outcomes.
+              Questions? Contact privacy@yourdomain.edu.
+            </p>
+          </section>
 
           <section
             style={{
@@ -631,33 +927,47 @@ export default function Game() {
               background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
               border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
               boxShadow: darkMode ? '0 25px 50px rgba(15,23,42,0.45)' : '0 25px 50px rgba(15,23,42,0.12)',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
-            <div style={{ padding: '20px 24px', borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0' }}>
+            <div
+              style={{
+                padding: '20px 24px',
+                borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+              }}
+            >
               <h2 style={{ margin: 0 }}>Round breakdown</h2>
             </div>
             <div style={{ maxHeight: '60vh', overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
-            <thead>
-                  <tr style={{ background: darkMode ? 'rgba(30,41,59,0.95)' : '#f8fafc', color: darkMode ? '#cbd5f5' : '#475467' }}>
+                <thead>
+                  <tr
+                    style={{
+                      background: darkMode ? 'rgba(30,41,59,0.95)' : '#f8fafc',
+                      color: darkMode ? '#cbd5f5' : '#475467',
+                    }}
+                  >
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>#</th>
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>Prompt</th>
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>Human response</th>
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>AI response</th>
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>You chose</th>
                     <th style={{ padding: '14px 16px', textAlign: 'left' }}>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questionHistory.map((question, idx) => (
+                  </tr>
+                </thead>
+                <tbody>
+                  {questionHistory.map((question, idx) => (
                     <tr
                       key={idx}
                       style={{
                         borderBottom: darkMode ? '1px solid rgba(148,163,184,0.15)' : '1px solid #e2e8f0',
                         background: question.correct
-                          ? (darkMode ? 'rgba(22,163,74,0.1)' : 'rgba(187,247,208,0.35)')
-                          : (darkMode ? 'rgba(239,68,68,0.12)' : 'rgba(254,226,226,0.6)')
+                          ? darkMode
+                            ? 'rgba(22,163,74,0.1)'
+                            : 'rgba(187,247,208,0.35)'
+                          : darkMode
+                            ? 'rgba(239,68,68,0.12)'
+                            : 'rgba(254,226,226,0.6)',
                       }}
                     >
                       <td style={{ padding: '14px 16px', fontWeight: 600 }}>{question.questionNumber}</td>
@@ -675,22 +985,24 @@ export default function Game() {
                             borderRadius: 999,
                             fontWeight: 600,
                             background: question.correct
-                              ? (darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.18)')
-                              : (darkMode ? 'rgba(248,113,113,0.25)' : 'rgba(248,113,113,0.18)'),
-                            color: question.correct ? '#15803d' : '#b91c1c'
+                              ? darkMode
+                                ? 'rgba(34,197,94,0.25)'
+                                : 'rgba(34,197,94,0.18)'
+                              : darkMode
+                                ? 'rgba(248,113,113,0.25)'
+                                : 'rgba(248,113,113,0.18)',
+                            color: question.correct ? '#15803d' : '#b91c1c',
                           }}
                         >
                           {question.correct ? '✅ Correct' : '❌ Incorrect'}
-                          <span style={{ fontSize: 12, opacity: 0.8 }}>
-                            Truth: {question.correctAnswer}
-                          </span>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          <span style={{ fontSize: 12, opacity: 0.8 }}>Truth: {question.correctAnswer}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
       </div>
@@ -937,3 +1249,5 @@ export default function Game() {
     </div>
   );
 }
+
+export const getServerSideProps = withPageAuthRequired();

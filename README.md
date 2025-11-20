@@ -116,6 +116,36 @@ Full Proposal: *“Human or AI? Using the Turing Test to Share and Deepen Perspe
 
 ---
 
+## Auth0 Setup (Columbia-only Access)
+
+This project now expects Auth0 credentials to be present at build/runtime. Configure the following environment variables (on Vercel and locally via `.env.local`):
+
+- `AUTH0_SECRET` – random 32+ character string
+- `AUTH0_ISSUER_BASE_URL` – e.g. `https://YOUR_TENANT.us.auth0.com`
+- `AUTH0_CLIENT_ID`
+- `AUTH0_CLIENT_SECRET`
+- `AUTH0_BASE_URL` – e.g. `https://your-vercel-domain`
+- `ALLOWED_EMAIL_DOMAIN` – `columbia.edu`
+
+Routes such as `/game` and `/api/results/*` are gated by Auth0 via middleware. Users signing in with non-`@columbia.edu` accounts are redirected back to `/` with guidance.
+
+**📖 For detailed setup instructions, see [SETUP.md](./SETUP.md)**
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+- **Missing dependencies**: Run `npm install` to ensure all packages (including `joi`) are installed
+- **Environment variables**: Copy `.env.local.example` to `.env.local` and fill in your credentials
+- **Google Sheets errors**: Verify service account has access to your spreadsheet
+- **Auth0 login issues**: Check callback URLs match your domain
+
+For detailed troubleshooting, see [SETUP.md](./SETUP.md#troubleshooting)
+
+---
+
 ## License & Usage
 
 © 2025 Zichen Zhao. All rights reserved.  
