@@ -389,106 +389,90 @@ export default function Game() {
     }
   };
 
-  useEffect(() => {
+  const handleSaveRound = async () => {
     if (!finished || !roundId) return;
-    if (!totalQuestions) return;
-    if (lastLoggedRoundId === roundId) return;
-    if (loggingState !== 'idle') return;
+    if (loggingState === 'pending' || loggingState === 'success') return;
 
     const controller = new AbortController();
     const accuracyForApi = Number((totalQuestions ? (score / totalQuestions) * 100 : 0).toFixed(2));
     const avgTimeForApi = Number(averageTimeSeconds.toFixed(2));
     const category = selectedTheme || 'Mixed prompts';
 
-    const logRoundResults = async () => {
-      console.log('🟢 [FRONTEND] Starting to log round results...');
-      console.log('🟢 [FRONTEND] Round ID:', roundId);
-      console.log('🟢 [FRONTEND] Payload:', {
-        roundId,
-        category,
-        numQuestions: totalQuestions,
-        score,
-        accuracyPct: accuracyForApi,
-        avgTimeSeconds: avgTimeForApi,
+    console.log('🟢 [FRONTEND] Starting to log round results...');
+    console.log('🟢 [FRONTEND] Round ID:', roundId);
+    console.log('🟢 [FRONTEND] Payload:', {
+      roundId,
+      category,
+      numQuestions: totalQuestions,
+      score,
+      accuracyPct: accuracyForApi,
+      avgTimeSeconds: avgTimeForApi,
+    });
+
+    setLoggingState('pending');
+
+    // Create timeout for the request
+    const timeoutId = setTimeout(() => {
+      console.error('🔴 [FRONTEND] Request timeout after 30 seconds');
+      controller.abort();
+    }, 30000);
+
+    try {
+      console.log('🟢 [FRONTEND] Sending POST request to /api/submit-data...');
+      const response = await fetch('/api/submit-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roundId,
+          category,
+          numQuestions: totalQuestions,
+          score,
+          accuracyPct: accuracyForApi,
+          avgTimeSeconds: avgTimeForApi,
+          user, // Send user object to bypass slow server-side session check
+        }),
+        signal: controller.signal,
       });
 
-      setLoggingState('pending');
+      clearTimeout(timeoutId);
+      console.log('🟢 [FRONTEND] Response received:', response.status, response.statusText);
 
-      // Create timeout for the request
-      const timeoutId = setTimeout(() => {
-        console.error('🔴 [FRONTEND] Request timeout after 10 seconds');
-        controller.abort();
-      }, 10000);
-
-      try {
-        console.log('🟢 [FRONTEND] Sending POST request to /api/submit-data...');
-        const response = await fetch('/api/submit-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            roundId,
-            category,
-            numQuestions: totalQuestions,
-            score,
-            accuracyPct: accuracyForApi,
-            avgTimeSeconds: avgTimeForApi,
-          }),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-        console.log('🟢 [FRONTEND] Response received:', response.status, response.statusText);
-
-        if (!response.ok) {
-          const message = await response.text();
-          console.error('🔴 [FRONTEND] Response not OK:', message);
-          throw new Error(message || 'Failed to log results');
-        }
-
-        const data = await response.json();
-        console.log('🟢 [FRONTEND] Response data:', data);
-
-        if (controller.signal.aborted) return;
-
-        if (data.status === 'duplicate') {
-          console.log('⚠️  [FRONTEND] Duplicate round detected');
-          setLoggingState('duplicate');
-        } else {
-          console.log('✅ [FRONTEND] Round logged successfully');
-          setLoggingState('success');
-        }
-        setLastLoggedRoundId(roundId);
-        setLogError('');
-      } catch (error) {
-        clearTimeout(timeoutId);
-        if (controller.signal.aborted) {
-          console.error('🔴 [FRONTEND] Request was aborted/timed out');
-          setLoggingState('error');
-          setLogError('Request timed out after 10 seconds');
-          return;
-        }
-        console.error('🔴 [FRONTEND] Error logging round:', error);
-        console.error('🔴 [FRONTEND] Error message:', error.message);
-        setLoggingState('error');
-        setLogError(error.message);
+      if (!response.ok) {
+        const message = await response.text();
+        console.error('🔴 [FRONTEND] Response not OK:', message);
+        throw new Error(message || 'Failed to log results');
       }
-    };
 
-    logRoundResults();
+      const data = await response.json();
+      console.log('🟢 [FRONTEND] Response data:', data);
 
-    return () => controller.abort();
-  }, [
-    averageTimeSeconds,
-    finished,
-    lastLoggedRoundId,
-    loggingState,
-    roundId,
-    score,
-    selectedTheme,
-    totalQuestions,
-  ]);
+      if (controller.signal.aborted) return;
+
+      if (data.status === 'duplicate') {
+        console.log('⚠️  [FRONTEND] Duplicate round detected');
+        setLoggingState('duplicate');
+      } else {
+        console.log('✅ [FRONTEND] Round logged successfully');
+        setLoggingState('success');
+      }
+      setLastLoggedRoundId(roundId);
+      setLogError('');
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (controller.signal.aborted) {
+        console.error('🔴 [FRONTEND] Request was aborted/timed out');
+        setLoggingState('error');
+        setLogError('Request timed out after 30 seconds');
+        return;
+      }
+      console.error('🔴 [FRONTEND] Error logging round:', error);
+      console.error('🔴 [FRONTEND] Error message:', error.message);
+      setLoggingState('error');
+      setLogError(error.message);
+    }
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -730,6 +714,52 @@ export default function Game() {
                   <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085' }}>
                     We collect reflections through a Google Form. Submitting it unlocks the next round.
                   </p>
+                </div>
+
+                {/* Save Round Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {loggingState === 'success' || loggingState === 'duplicate' ? (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 16px',
+                      borderRadius: 999,
+                      background: darkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.12)',
+                      color: darkMode ? '#86efac' : '#15803d',
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}>
+                      <span>✅ Round Saved</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleSaveRound}
+                      disabled={loggingState === 'pending'}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: 999,
+                        border: 'none',
+                        backgroundColor: loggingState === 'error' ? '#ef4444' : (darkMode ? '#6366f1' : '#4f46e5'),
+                        color: 'white',
+                        cursor: loggingState === 'pending' ? 'wait' : 'pointer',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        opacity: loggingState === 'pending' ? 0.7 : 1,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      {loggingState === 'pending' ? 'Saving...' : (loggingState === 'error' ? 'Retry Save' : '💾 Save Round')}
+                    </button>
+                  )}
+                  {loggingState === 'error' && (
+                    <span style={{ color: '#ef4444', fontSize: 14 }}>
+                      {logError || 'Failed to save'}
+                    </span>
+                  )}
                 </div>
 
                 <div

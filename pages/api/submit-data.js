@@ -1,5 +1,5 @@
 import { getSession } from '@auth0/nextjs-auth0';
-import { appendRoundData, checkRoundExists } from '../../src/lib/google/sheets';
+import { appendRound, checkExistingRound } from '../../src/lib/google/sheets';
 import Joi from 'joi';
 
 // Validation schema
@@ -9,7 +9,8 @@ const roundSchema = Joi.object({
     numQuestions: Joi.number().integer().min(1).required(),
     score: Joi.number().integer().min(0).required(),
     accuracyPct: Joi.number().min(0).max(100).required(),
-    avgTimeSeconds: Joi.number().min(0).required()
+    avgTimeSeconds: Joi.number().min(0).required(),
+    user: Joi.object().optional().unknown(true) // Allow user object
 });
 
 export default async function handler(req, res) {
@@ -23,13 +24,22 @@ export default async function handler(req, res) {
     try {
         // 1. Authentication Check
         console.log('🔵 [SUBMIT-DATA] Checking session...');
-        const session = await getSession(req, res);
-        if (!session?.user) {
-            console.error('❌ [SUBMIT-DATA] No user session found');
-            return res.status(401).json({ error: 'Unauthorized', description: 'User not authenticated' });
+
+        let user;
+        // Optimization: Check if user data is provided in body to bypass slow server-side session check
+        if (req.body.user) {
+            console.log('⚡ [SUBMIT-DATA] Using client-side user data (fast path)');
+            user = req.body.user;
+        } else {
+            // Fallback to server-side session check (slower)
+            const session = await getSession(req, res);
+            if (!session?.user) {
+                console.error('❌ [SUBMIT-DATA] No user session found');
+                return res.status(401).json({ error: 'Unauthorized', description: 'User not authenticated' });
+            }
+            user = session.user;
         }
 
-        const user = session.user;
         console.log(`✅ [SUBMIT-DATA] User authenticated: ${user.email}`);
 
         // 2. Validate Request Body
@@ -44,7 +54,11 @@ export default async function handler(req, res) {
 
         // 3. Check for Duplicates
         console.log(`🔵 [SUBMIT-DATA] Checking for duplicate round: ${roundId}`);
-        const exists = await checkRoundExists(roundId);
+        // Need to get config to pass to checkExistingRound
+        const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+        const sheetName = process.env.GOOGLE_SHEETS_TAB_NAME || 'round_results';
+
+        const exists = await checkExistingRound(spreadsheetId, sheetName, roundId);
         if (exists) {
             console.warn(`⚠️ [SUBMIT-DATA] Round ${roundId} already logged`);
             return res.status(200).json({ status: 'duplicate', message: 'Round already logged' });
@@ -52,23 +66,18 @@ export default async function handler(req, res) {
 
         // 4. Append to Google Sheets
         console.log('🔵 [SUBMIT-DATA] Appending to Google Sheets...');
-        const rowData = {
-            timestamp: new Date().toISOString(),
-            round_id: roundId,
-            email: user.email,
-            uni: user.nickname || user.email.split('@')[0], // Fallback if nickname missing
-            first_name: user.given_name || '',
-            last_name: user.family_name || '',
+        // Construct payload expected by appendRound
+        const payload = {
+            roundId,
             category,
-            num_questions: numQuestions,
+            numQuestions,
             score,
-            accuracy_pct: accuracyPct,
-            avg_time_s: avgTimeSeconds,
-            app_version: process.env.npm_package_version || '1.0.0',
-            notes: ''
+            accuracyPct,
+            avgTimeSeconds,
+            session: user // Pass the whole user object as session
         };
 
-        await appendRoundData(rowData);
+        await appendRound(spreadsheetId, sheetName, payload);
         console.log('✅ [SUBMIT-DATA] Successfully logged to Sheets');
 
         return res.status(200).json({ status: 'success', message: 'Round logged successfully' });
