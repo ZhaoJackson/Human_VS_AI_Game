@@ -54,6 +54,7 @@ export default function Home() {
             <span style={{ fontSize: '0.9rem', color: '#475467' }}>
               Signed in as <strong>{user.email}</strong>
             </span>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/auth/logout"
               style={{
@@ -69,6 +70,7 @@ export default function Home() {
             </a>
           </>
         ) : (
+          /* eslint-disable-next-line @next/next/no-html-link-for-pages */
           <a
             href="/api/auth/login"
             style={{
