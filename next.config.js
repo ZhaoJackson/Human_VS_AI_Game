@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
-  // Fix Auth0 cookie issues
+  reactStrictMode: true,
+  swcMinify: true,
+  
   async headers() {
     return [
       {
