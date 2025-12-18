@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
+import Link from 'next/link';
 
 export default function Home() {
   const router = useRouter();
@@ -330,7 +331,7 @@ export default function Home() {
         }}>
           <span>© 2025 Zichen Zhao</span>
           <span style={{ opacity: 0.5 }}>•</span>
-          <a href="/contact" style={{
+          <Link href="/contact" style={{
             color: '#3E2723',
             textDecoration: 'none',
             borderBottom: '1px solid rgba(62,39,35,0.3)',
@@ -339,9 +340,9 @@ export default function Home() {
             onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
             onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
             Contact
-          </a>
+          </Link>
           <span style={{ opacity: 0.5 }}>•</span>
-          <a href="/privacy" style={{
+          <Link href="/privacy" style={{
             color: '#3E2723',
             textDecoration: 'none',
             borderBottom: '1px solid rgba(62,39,35,0.3)',
@@ -350,9 +351,9 @@ export default function Home() {
             onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
             onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
             Privacy
-          </a>
+          </Link>
           <span style={{ opacity: 0.5 }}>•</span>
-          <a href="/about" style={{
+          <Link href="/about" style={{
             color: '#3E2723',
             textDecoration: 'none',
             borderBottom: '1px solid rgba(62,39,35,0.3)',
@@ -361,7 +362,7 @@ export default function Home() {
             onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
             onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
             About
-          </a>
+          </Link>
         </div>
       </footer>
     </div>

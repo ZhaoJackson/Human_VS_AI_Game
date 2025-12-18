@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Privacy() {
     return (
         <div style={{
@@ -22,7 +24,7 @@ export default function Privacy() {
                 }}>
                     Turing Test by Social Intervention Group
                 </div>
-                <a href="/" style={{
+                <Link href="/" style={{
                     padding: '10px 24px',
                     borderRadius: 999,
                     background: '#8B7355',
@@ -32,7 +34,7 @@ export default function Privacy() {
                     fontWeight: 600
                 }}>
                     Back to Home
-                </a>
+                </Link>
             </header>
 
             {/* Main Content */}
@@ -207,13 +209,13 @@ export default function Privacy() {
                             marginTop: 20
                         }}>
                             To exercise any of these rights, please contact us via the{' '}
-                            <a href="/contact" style={{
+                            <Link href="/contact" style={{
                                 color: '#8B7355',
                                 textDecoration: 'none',
                                 borderBottom: '1px solid rgba(139,115,85,0.4)'
                             }}>
                                 Contact page
-                            </a>.
+                            </Link>.
                         </p>
                     </section>
                 </div>

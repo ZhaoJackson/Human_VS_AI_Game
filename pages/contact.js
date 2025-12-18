@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Contact() {
     return (
         <div style={{
@@ -22,7 +24,7 @@ export default function Contact() {
                 }}>
                     Turing Test by Social Intervention Group
                 </div>
-                <a href="/" style={{
+                <Link href="/" style={{
                     padding: '10px 24px',
                     borderRadius: 999,
                     background: '#8B7355',
@@ -32,7 +34,7 @@ export default function Contact() {
                     fontWeight: 600
                 }}>
                     Back to Home
-                </a>
+                </Link>
             </header>
 
             {/* Main Content */}

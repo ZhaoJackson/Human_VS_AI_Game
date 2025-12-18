@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function About() {
   return (
     <div style={{
@@ -22,7 +24,7 @@ export default function About() {
         }}>
           Turing Test by Social Intervention Group
         </div>
-        <a href="/" style={{
+        <Link href="/" style={{
           padding: '10px 24px',
           borderRadius: 999,
           background: '#8B7355',
@@ -32,7 +34,7 @@ export default function About() {
           fontWeight: 600
         }}>
           Back to Home
-        </a>
+        </Link>
       </header>
 
       {/* Main Content */}
@@ -194,13 +196,13 @@ export default function About() {
             }}>
               All data is stored securely and used only for research. For complete details,
               please see our{' '}
-              <a href="/privacy" style={{
+              <Link href="/privacy" style={{
                 color: '#8B7355',
                 textDecoration: 'none',
                 borderBottom: '1px solid rgba(139,115,85,0.4)'
               }}>
                 Privacy page
-              </a>.
+              </Link>.
             </p>
           </section>
 
@@ -249,13 +251,13 @@ export default function About() {
               lineHeight: 1.8
             }}>
               Questions or feedback? Visit our{' '}
-              <a href="/contact" style={{
+              <Link href="/contact" style={{
                 color: '#8B7355',
                 textDecoration: 'none',
                 borderBottom: '1px solid rgba(139,115,85,0.4)'
               }}>
                 Contact page
-              </a>.
+              </Link>.
             </p>
           </section>
         </div>
