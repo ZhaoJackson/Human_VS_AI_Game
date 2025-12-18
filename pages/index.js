@@ -119,28 +119,7 @@ export default function Home() {
             // eslint-disable-next-line @next/next/no-html-link-for-pages
             <a
               href="/api/auth/login?returnTo=/start"
-              onClick={(e) => {
-                console.log('[DEBUG] Header Sign in clicked');
-                const inIframe = isInIframe();
-                console.log('[DEBUG] Is in iframe?', inIframe);
-
-                if (inIframe) {
-                  console.log('[DEBUG] Preventing default, using iframe auth');
-                  e.preventDefault();
-                  handleIframeAuth('/start',
-                    () => {
-                      console.log('[DEBUG] Auth success - reloading');
-                      window.location.reload();
-                    },
-                    (error) => {
-                      console.error('[DEBUG] Auth error:', error);
-                      alert('Authentication failed. Please try again.');
-                    }
-                  );
-                } else {
-                  console.log('[DEBUG] Not in iframe, allowing default link behavior');
-                }
-              }}
+              target={isInIframe() ? "_blank" : undefined}
               style={{
                 padding: '10px 24px',
                 borderRadius: 999,
