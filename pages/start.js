@@ -258,19 +258,7 @@ export default function Start() {
                 </p>
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
-                  href="/api/auth/login?returnTo=/start"
-                  onClick={(e) => {
-                    if (isInIframe()) {
-                      e.preventDefault();
-                      handleIframeAuth('/start',
-                        () => window.location.reload(),
-                        (error) => {
-                          console.error('Auth error:', error);
-                          alert('Authentication failed. Please try again.');
-                        }
-                      );
-                    }
-                  }}
+                  href={isInIframe() ? "/api/auth/login?returnTo=/start&fromDrupal=true" : "/api/auth/login?returnTo=/start"}
                   style={{
                     display: 'inline-block',
                     padding: '14px 32px',
