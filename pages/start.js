@@ -247,7 +247,7 @@ export default function Start() {
                 </p>
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
-                  href={isInIframe() ? "/api/auth/login?returnTo=/start&fromDrupal=true" : "/api/auth/login?returnTo=/start"}
+                  href={isInIframe() ? "/api/auth/login?returnTo=" + encodeURIComponent("/start?fromDrupal=true") : "/api/auth/login?returnTo=/start"}
                   target={isInIframe() ? "_blank" : undefined}
                   style={{
                     display: 'inline-block',
