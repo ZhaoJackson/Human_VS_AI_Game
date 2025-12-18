@@ -181,7 +181,7 @@ export default function Game() {
     const selected = [...filtered]
       .filter(item => item.prompt && item.human && item.ai)
       .sort(() => Math.random() - 0.5)
-      .slice(0, 15);
+      .slice(0, 3);
 
     setShuffledData(selected);
     setIndex(0);
@@ -207,32 +207,9 @@ export default function Game() {
     setLastLoggedRoundId('');
   };
 
-  // Handle timeout for each question
-  useEffect(() => {
-    if (gameStarted && !finished) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            // Force move to next question when time runs out
-            if (currentItem && responseToShow) {
-              setIndex(prev => prev + 1);
-            }
-            return timeLimit; // Reset to full time limit
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+  // Timer removed - no countdown pressure. Time tracking is still done per question for analytics.
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [gameStarted, finished, currentItem, responseToShow, timeLimit]);
-
-  // Reset timer for new question
+  // Load next question or finish round
   useEffect(() => {
     if (shuffledData.length > 0 && index < shuffledData.length) {
       const item = shuffledData[index];
@@ -240,30 +217,11 @@ export default function Game() {
       setCurrentItem(item);
       setResponseToShow(showHuman ? item.human : item.ai);
       setIsHumanFirst(Math.random() > 0.5);
-      setTimeLeft(timeLimit);
       setStartTime(Date.now());
-
-      // Clear and restart timer for new question
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            // Force move to next question when time runs out
-            if (currentItem && responseToShow) {
-              setIndex(prev => prev + 1);
-            }
-            return timeLimit;
-          }
-          return prev - 1;
-        });
-      }, 1000);
     } else if (shuffledData.length > 0 && index >= shuffledData.length) {
       setFinished(true);
     }
-  }, [shuffledData, index, timeLimit, currentItem, responseToShow]);
+  }, [shuffledData, index]);
 
   const handleSwipe = (direction) => {
     if (!currentItem || !responseToShow) return;
@@ -272,9 +230,7 @@ export default function Game() {
     const correctGuess = (direction === 'right' && isHuman) || (direction === 'left' && !isHuman);
     const timeTaken = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    // Timer removed - no cleanup needed
 
     // Add to question history
     setQuestionHistory(prev => [...prev, {
@@ -308,9 +264,7 @@ export default function Game() {
       : (isHumanFirst ? 'AI' : 'Human');
     const timeTaken = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    // Timer removed - no cleanup needed
 
     // Add to question history
     setQuestionHistory(prev => [...prev, {
@@ -354,13 +308,10 @@ export default function Game() {
       window.localStorage.removeItem('turing:lastRoundId');
       window.localStorage.removeItem('turing:formStatus');
     }
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    // Timer removed - no cleanup needed
   };
 
   const handlePlayAgain = () => {
-    if (!formCompleted) return;
     startGame();
   };
 
@@ -473,6 +424,14 @@ export default function Game() {
       setLogError(error.message);
     }
   };
+
+  // Auto-save round results when game finishes
+  useEffect(() => {
+    if (finished && roundId && loggingState === 'idle') {
+      console.log('🟢 [AUTO-SAVE] Round finished, triggering auto-save...');
+      handleSaveRound();
+    }
+  }, [finished, roundId, loggingState]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -614,16 +573,6 @@ export default function Game() {
   if (finished) {
     const themeLabel = selectedTheme || 'Mixed prompts';
     const averageDisplay = averageTimeSeconds ? `${averageTimeSeconds.toFixed(1)}s` : '—';
-    const playAgainDisabled = !formCompleted;
-    const feedbackButtonLabel = formCompleted ? 'Reopen Feedback Form' : 'Open Feedback Form';
-    const loggingDescriptions = {
-      idle: 'Preparing to log this round to Google Sheets…',
-      pending: 'Logging round results to Google Sheets…',
-      success: 'Round logged successfully to Google Sheets.',
-      duplicate: 'This round was already logged earlier—no duplicate entry was created.',
-      error: logError ? `Logging failed: ${logError}` : 'Logging failed. Please try again.',
-    };
-    const loggingDescription = loggingDescriptions[loggingState] || loggingDescriptions.idle;
 
     return (
       <div
@@ -637,6 +586,7 @@ export default function Game() {
         }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 32 }}>
+          {/* TOP PANEL: Score and Stats */}
           <section
             style={{
               borderRadius: 24,
@@ -699,259 +649,93 @@ export default function Game() {
               </div>
             </div>
 
+            {/* Auto-save status - subtle indicator */}
             <div
               style={{
-                display: 'grid',
-                gap: 20,
+                padding: '12px 16px',
+                borderRadius: 12,
                 background: darkMode ? 'rgba(15,23,42,0.55)' : '#f8fafc',
-                borderRadius: 20,
-                padding: '24px 24px 28px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: '0.9rem',
               }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <h2 style={{ marginBottom: 8 }}>Submit required feedback</h2>
-                  <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085' }}>
-                    We collect reflections through a Google Form. Submitting it unlocks the next round.
-                  </p>
-                </div>
-
-                {/* Save Round Button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {loggingState === 'success' || loggingState === 'duplicate' ? (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '10px 16px',
-                      borderRadius: 999,
-                      background: darkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.12)',
-                      color: darkMode ? '#86efac' : '#15803d',
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}>
-                      <span>✅ Round Saved</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleSaveRound}
-                      disabled={loggingState === 'pending'}
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: 999,
-                        border: 'none',
-                        backgroundColor: loggingState === 'error' ? '#ef4444' : (darkMode ? '#6366f1' : '#4f46e5'),
-                        color: 'white',
-                        cursor: loggingState === 'pending' ? 'wait' : 'pointer',
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        opacity: loggingState === 'pending' ? 0.7 : 1,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }}
-                    >
-                      {loggingState === 'pending' ? 'Saving...' : (loggingState === 'error' ? 'Retry Save' : '💾 Save Round')}
-                    </button>
-                  )}
-                  {loggingState === 'error' && (
-                    <span style={{ color: '#ef4444', fontSize: 14 }}>
-                      {logError || 'Failed to save'}
-                    </span>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: 12,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '8px 16px',
-                      borderRadius: 999,
-                      background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.12)',
-                      color: darkMode ? '#c7d2fe' : '#1d4ed8',
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Round ID: <code style={{ fontSize: 13 }}>{roundId || 'pending'}</code>
-                  </span>
+              {loggingState === 'pending' && (
+                <>
+                  <span style={{ color: darkMode ? '#60a5fa' : '#2563eb' }}>⏳</span>
+                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Saving round results...</span>
+                </>
+              )}
+              {(loggingState === 'success' || loggingState === 'duplicate') && (
+                <>
+                  <span>✅</span>
+                  <span style={{ color: darkMode ? '#86efac' : '#15803d' }}>Round saved successfully</span>
+                </>
+              )}
+              {loggingState === 'error' && (
+                <>
+                  <span>⚠️</span>
+                  <span style={{ color: '#ef4444' }}>Auto-save failed: {logError || 'Unknown error'}</span>
                   <button
-                    type="button"
-                    onClick={handleCopyRoundId}
+                    onClick={handleSaveRound}
                     style={{
-                      padding: '10px 18px',
-                      borderRadius: 999,
-                      border: '1px solid rgba(148,163,184,0.4)',
+                      marginLeft: 'auto',
+                      padding: '6px 14px',
+                      borderRadius: 8,
+                      border: '1px solid #ef4444',
                       background: 'transparent',
-                      color: darkMode ? '#e2e8f0' : '#475467',
+                      color: '#ef4444',
                       cursor: 'pointer',
-                      fontSize: '0.9rem',
+                      fontSize: '0.85rem',
                     }}
                   >
-                    {roundIdCopied ? 'Copied!' : 'Copy round ID'}
+                    Retry
                   </button>
-                </div>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                  <button
-                    type="button"
-                    onClick={handleOpenFeedbackForm}
-                    disabled={!feedbackFormUrl}
-                    style={{
-                      padding: '12px 28px',
-                      borderRadius: 999,
-                      border: 'none',
-                      backgroundColor: feedbackFormUrl ? '#2563eb' : 'rgba(148,163,184,0.4)',
-                      color: '#fff',
-                      cursor: feedbackFormUrl ? 'pointer' : 'not-allowed',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {feedbackButtonLabel}
-                  </button>
-                  {feedbackFormUrl && (
-                    <a
-                      href={feedbackFormUrl}
-                      target="_blank"
-                      rel="noopener"
-                      style={{
-                        padding: '12px 24px',
-                        borderRadius: 999,
-                        border: '1px solid rgba(148,163,184,0.6)',
-                        color: darkMode ? '#e2e8f0' : '#475467',
-                        textDecoration: 'none',
-                        fontWeight: 500,
-                      }}
-                    >
-                      Open in current tab
-                    </a>
-                  )}
-                </div>
-
-                {!feedbackFormUrl && (
-                  <p style={{ margin: 0, color: '#f97316', fontSize: '0.9rem' }}>
-                    Configure `NEXT_PUBLIC_FEEDBACK_FORM_URL` and field mappings to enable the feedback form button.
-                  </p>
-                )}
-
-                <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#475467', fontSize: '0.95rem' }}>
-                  {formCompleted
-                    ? 'Feedback received! “Play another round” is unlocked.'
-                    : 'Submit the Google Form to unlock “Play another round.”'}
-                </p>
-              </div>
-
-              <div
-                style={{
-                  padding: '20px 24px',
-                  borderRadius: 16,
-                  background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
-                  border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid rgba(148,163,184,0.2)',
-                  display: 'grid',
-                  gap: 12,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  <strong>Round logging status</strong>
-                  <span
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 999,
-                      fontSize: 12,
-                      letterSpacing: 0.5,
-                      textTransform: 'uppercase',
-                      background:
-                        loggingState === 'success' || loggingState === 'duplicate'
-                          ? (darkMode ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.18)')
-                          : loggingState === 'error'
-                            ? (darkMode ? 'rgba(239,68,68,0.25)' : 'rgba(248,113,113,0.18)')
-                            : (darkMode ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.18)'),
-                      color:
-                        loggingState === 'success' || loggingState === 'duplicate'
-                          ? '#15803d'
-                          : loggingState === 'error'
-                            ? '#b91c1c'
-                            : darkMode
-                              ? '#c7d2fe'
-                              : '#1d4ed8',
-                    }}
-                  >
-                    {loggingState.toUpperCase()}
-                  </span>
-                </div>
-                <p style={{ margin: 0, color: darkMode ? '#cbd5f5' : '#475467', fontSize: '0.95rem' }}>
-                  {loggingDescription}
-                </p>
-                {loggingState === 'error' && (
-                  <button
-                    type="button"
-                    onClick={handleRetryLog}
-                    style={{
-                      justifySelf: 'start',
-                      padding: '10px 20px',
-                      borderRadius: 999,
-                      border: '1px solid rgba(248,113,113,0.6)',
-                      background: darkMode ? 'rgba(248,113,113,0.2)' : 'rgba(248,113,113,0.12)',
-                      color: darkMode ? '#fecaca' : '#b91c1c',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    Retry logging
-                  </button>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                <button
-                  onClick={handlePlayAgain}
-                  disabled={playAgainDisabled}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 999,
-                    border: 'none',
-                    backgroundColor: playAgainDisabled ? 'rgba(148,163,184,0.35)' : '#2563eb',
-                    color: '#fff',
-                    cursor: playAgainDisabled ? 'not-allowed' : 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  🔁 Play another round
-                </button>
-                <button
-                  onClick={handleReturnHome}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 999,
-                    border: 'none',
-                    backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                    color: darkMode ? '#e2e8f0' : '#475467',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                  }}
-                >
-                  🏠 Back to landing
-                </button>
-              </div>
+                </>
+              )}
+              {loggingState === 'idle' && (
+                <>
+                  <span>💾</span>
+                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Preparing to save...</span>
+                </>
+              )}
             </div>
 
-            <p style={{ margin: 0, color: darkMode ? '#94a3b8' : '#667085', fontSize: '0.85rem' }}>
-              We store round stats (email, UNI, score, accuracy, timing) to improve the program and audit outcomes.
-              Questions? Contact privacy@yourdomain.edu.
-            </p>
+            {/* BOTTOM PANEL: Action Buttons */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <button
+                onClick={handlePlayAgain}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 999,
+                  border: 'none',
+                  backgroundColor: '#2563eb',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                🔁 Play another round
+              </button>
+              <button
+                onClick={handleReturnHome}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 999,
+                  border: 'none',
+                  backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
+                  color: darkMode ? '#e2e8f0' : '#475467',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                🏠 Back to landing
+              </button>
+            </div>
           </section>
 
-          <section
+          {/* MIDDLE PANEL: Round Breakdown */}          <section
             style={{
               borderRadius: 20,
               background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
@@ -1062,22 +846,7 @@ export default function Game() {
             <p style={{ color: darkMode ? '#94a3b8' : '#475467', marginBottom: 16 }}>
               Question {index + 1} of {shuffledData.length}
             </p>
-            <div
-              className="timer-container"
-              style={{
-                margin: '0 auto',
-                padding: '6px 14px',
-                borderRadius: 999,
-                backgroundColor: timeLeft <= 10 ? '#ef4444' : '#6366f1',
-                color: '#fff',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                fontWeight: 600
-              }}
-            >
-              ⏱️ {timeLeft}s left · limit {timeLimit}s
-            </div>
+            {/* Timer removed - no time pressure */}
           </>
         )}
       </div>
