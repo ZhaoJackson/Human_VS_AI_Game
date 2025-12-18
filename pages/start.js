@@ -33,44 +33,118 @@ export default function Start() {
     router.push(`/game?${params.toString()}`);
   };
 
-  // Check if we just returned from auth and should close this window
+  // Check if we just authenticated and should redirect back to Drupal
   useEffect(() => {
-    // If user is authenticated and this window was opened for auth
-    if (user && window.opener && sessionStorage.getItem('authInProgress')) {
-      // Mark auth as completed
-      sessionStorage.setItem('authCompleted', 'true');
-      sessionStorage.removeItem('authInProgress');
+    if (user && !isLoading) {
+      // Check if user came from Drupal iframe
+      const referrer = document.referrer;
+      const isDrupalReferrer = referrer && referrer.includes('sig.columbia.edu');
 
-      // Try to send message to opener
-      try {
-        window.opener.postMessage({ type: 'auth-success', user }, window.location.origin);
-      } catch (e) {
-        console.log('Could not message opener:', e);
+      console.log('[AUTH] User authenticated:', user.email);
+      console.log('[AUTH] Referrer:', referrer);
+      console.log('[AUTH] Is from Drupal?', isDrupalReferrer);
+
+      // If they came from Drupal, redirect back
+      if (isDrupalReferrer) {
+        console.log('[AUTH] Redirecting back to Drupal...');
+
+        setTimeout(() => {
+          window.location.href = 'https://sig.columbia.edu/content/turing-test-lets-play';
+        }, 1500);
+
+        // Show message while redirecting
+        return;
       }
 
-      // Show message and close
-      const closeWindow = () => {
-        alert('Authentication successful! This window will close. Please return to the main page.');
-        window.close();
+      // Also check for popup/tab authentication
+      if (window.opener && sessionStorage.getItem('authInProgress')) {
+        sessionStorage.setItem('authCompleted', 'true');
+        sessionStorage.removeItem('authInProgress');
 
-        // If window.close() didn't work, redirect to close instruction
-        setTimeout(() => {
-          if (!window.closed) {
-            document.body.innerHTML = `
-              <div style="text-align: center; padding: 50px; font-family: 'Times New Roman', serif;">
-                <h1>✅ Authentication Successful!</h1>
-                <p style="font-size: 1.2rem; margin: 20px 0;">You can now close this window and return to the main page.</p>
-                <p style="color: #666;">If this window doesn't close automatically, please close it manually.</p>
-              </div>
-            `;
-          }
-        }, 500);
-      };
+        try {
+          window.opener.postMessage({ type: 'auth-success', user }, window.location.origin);
+        } catch (e) {
+          console.log('Could not message opener:', e);
+        }
 
-      // Close after a brief delay
-      setTimeout(closeWindow, 1000);
+        const closeWindow = () => {
+          alert('Authentication successful! This window will close. Please return to the main page.');
+          window.close();
+
+          setTimeout(() => {
+            if (!window.closed) {
+              document.body.innerHTML = `
+                <div style="text-align: center; padding: 50px; font-family: 'Times New Roman', serif;">
+                  <h1>✅ Authentication Successful!</h1>
+                  <p style="font-size: 1.2rem; margin: 20px 0;">You can now close this window and return to the main page.</p>
+                  <p style="color: #666;">If this window doesn't close automatically, please close it manually.</p>
+                </div>
+              `;
+            }
+          }, 500);
+        };
+
+        setTimeout(closeWindow, 1000);
+      }
+    }
+  }, [user, isLoading]);
+
+  // Show redirecting message if came from Drupal
+  useEffect(() => {
+    if (user && document.referrer.includes('sig.columbia.edu')) {
+      const timer = setTimeout(() => {
+        // Will be redirected by above useEffect
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [user]);
+
+  const referrer = document.referrer;
+  const isDrupalReferrer = referrer && referrer.includes('sig.columbia.edu');
+  const showRedirectMessage = user && isDrupalReferrer;
+
+  if (showRedirectMessage) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
+        fontFamily: '"Times New Roman", Times, serif'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          background: 'rgba(255,255,255,0.9)',
+          padding: 60,
+          borderRadius: 20,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+        }}>
+          <h1 style={{ fontSize: '2rem', marginBottom: 20, color: '#3E2723' }}>
+            ✅ Authentication Successful!
+          </h1>
+          <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: 30 }}>
+            Redirecting you back to the page...
+          </p>
+          <div style={{
+            width: 50,
+            height: 50,
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #8B7355',
+            borderRadius: '50%',
+            margin: '0 auto',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
