@@ -33,27 +33,27 @@ export default function Start() {
     router.push(`/game?${params.toString()}`);
   };
 
-  // Check if we just authenticated and should redirect back to Drupal
+  // Check if we just authenticated from Drupal and should redirect back
   useEffect(() => {
-    if (user && !isLoading) {
-      // Check if user came from Drupal iframe
-      const referrer = document.referrer;
-      const isDrupalReferrer = referrer && referrer.includes('sig.columbia.edu');
+    if (user && !isLoading && typeof window !== 'undefined') {
+      // Check URL for fromDrupal parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromDrupal = urlParams.get('fromDrupal') === 'true';
 
       console.log('[AUTH] User authenticated:', user.email);
-      console.log('[AUTH] Referrer:', referrer);
-      console.log('[AUTH] Is from Drupal?', isDrupalReferrer);
+      console.log('[AUTH] URL params:', window.location.search);
+      console.log('[AUTH] fromDrupal parameter:', fromDrupal);
 
-      // If they came from Drupal, redirect back
-      if (isDrupalReferrer) {
-        console.log('[AUTH] Redirecting back to Drupal...');
+      // If they came from Drupal, redirect back after showing message
+      if (fromDrupal) {
+        console.log('[AUTH] Redirecting back to Drupal in 2 seconds...');
 
         setTimeout(() => {
+          console.log('[AUTH] Executing redirect now...');
           window.location.href = 'https://sig.columbia.edu/content/turing-test-lets-play';
-        }, 1500);
+        }, 2000);
 
-        // Show message while redirecting
-        return;
+        return; // Exit early to prevent other auth flows
       }
 
       // Also check for popup/tab authentication
@@ -89,19 +89,8 @@ export default function Start() {
     }
   }, [user, isLoading]);
 
-  // Show redirecting message if came from Drupal
-  useEffect(() => {
-    if (typeof document !== 'undefined' && user && document.referrer.includes('sig.columbia.edu')) {
-      const timer = setTimeout(() => {
-        // Will be redirected by above useEffect
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [user]);
-
-  const referrer = typeof document !== 'undefined' ? document.referrer : '';
-  const isDrupalReferrer = referrer && referrer.includes('sig.columbia.edu');
-  const showRedirectMessage = user && isDrupalReferrer;
+  // Check if we should show redirect message
+  const showRedirectMessage = user && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('fromDrupal') === 'true';
 
   if (showRedirectMessage) {
     return (
