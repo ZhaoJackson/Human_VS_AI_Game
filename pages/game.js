@@ -5,11 +5,14 @@ import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
 import { useGame } from '../src/features/game/contexts/GameContext';
+import { useSession } from '../src/features/game/contexts/SessionContext';
 import GameSettings from '../src/components/game/GameSettings';
+import { SessionStats } from '../src/components/game/SessionStats';
 
 export default function Game() {
   const { darkMode, gameMode, timeLimit, fontSize } = useGame();
   const { user } = useUser();
+  const { sessionStats, addRoundToSession } = useSession();
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -405,10 +408,20 @@ export default function Game() {
         console.log('⚠️  [FRONTEND] Duplicate round detected');
         setLoggingState('duplicate');
       } else {
-        console.log('✅ [FRONTEND] Round logged successfully');
+        console.log('✅ [SUBMIT] Round logged successfully');
         setLoggingState('success');
+        setLastLoggedRoundId(roundId);
+
+        // Add round to session tracking
+        addRoundToSession({
+          roundId,
+          category: selectedTheme || 'Mixed',
+          numQuestions: totalQuestions,
+          score,
+          accuracyPct: (score / totalQuestions) * 100,
+          avgTimeSeconds: averageTimeSeconds
+        });
       }
-      setLastLoggedRoundId(roundId);
       setLogError('');
     } catch (error) {
       clearTimeout(timeoutId);
@@ -649,6 +662,9 @@ export default function Game() {
               </div>
             </div>
           </section>
+
+          {/* Session Stats - Shows cumulative results */}
+          <SessionStats sessionStats={sessionStats} darkMode={darkMode} />
 
           {/* MIDDLE PANEL: Round Breakdown */}
           <section

@@ -1,5 +1,6 @@
 import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { GameProvider } from '../src/features/game/contexts/GameContext';
+import { SessionProvider } from '../src/features/game/contexts/SessionContext';
 import { useEffect } from 'react';
 import { useGame } from '../src/features/game/contexts/GameContext';
 import '../src/styles/globals.css';
@@ -21,10 +22,12 @@ function DarkModeHandler() {
 function MyApp({ Component, pageProps }) {
   return (
     <UserProvider user={pageProps.user}>
-      <GameProvider>
-        <DarkModeHandler />
-        <Component {...pageProps} />
-      </GameProvider>
+      <SessionProvider>
+        <GameProvider>
+          <DarkModeHandler />
+          <Component {...pageProps} />
+        </GameProvider>
+      </SessionProvider>
     </UserProvider>
   );
 }
