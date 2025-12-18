@@ -10,7 +10,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://*.columbia.edu https://columbia.edu",
+            value: "frame-ancestors 'self' https://*.columbia.edu https://columbia.edu https://sig.columbia.edu",
           },
         ],
       },
