@@ -648,94 +648,10 @@ export default function Game() {
                 <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{averageDisplay}</p>
               </div>
             </div>
-
-            {/* Auto-save status - subtle indicator */}
-            <div
-              style={{
-                padding: '12px 16px',
-                borderRadius: 12,
-                background: darkMode ? 'rgba(15,23,42,0.55)' : '#f8fafc',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                fontSize: '0.9rem',
-              }}
-            >
-              {loggingState === 'pending' && (
-                <>
-                  <span style={{ color: darkMode ? '#60a5fa' : '#2563eb' }}>⏳</span>
-                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Saving round results...</span>
-                </>
-              )}
-              {(loggingState === 'success' || loggingState === 'duplicate') && (
-                <>
-                  <span>✅</span>
-                  <span style={{ color: darkMode ? '#86efac' : '#15803d' }}>Round saved successfully</span>
-                </>
-              )}
-              {loggingState === 'error' && (
-                <>
-                  <span>⚠️</span>
-                  <span style={{ color: '#ef4444' }}>Auto-save failed: {logError || 'Unknown error'}</span>
-                  <button
-                    onClick={handleSaveRound}
-                    style={{
-                      marginLeft: 'auto',
-                      padding: '6px 14px',
-                      borderRadius: 8,
-                      border: '1px solid #ef4444',
-                      background: 'transparent',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    Retry
-                  </button>
-                </>
-              )}
-              {loggingState === 'idle' && (
-                <>
-                  <span>💾</span>
-                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Preparing to save...</span>
-                </>
-              )}
-            </div>
-
-            {/* BOTTOM PANEL: Action Buttons */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-              <button
-                onClick={handlePlayAgain}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: 999,
-                  border: 'none',
-                  backgroundColor: '#2563eb',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                }}
-              >
-                🔁 Play another round
-              </button>
-              <button
-                onClick={handleReturnHome}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: 999,
-                  border: 'none',
-                  backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                  color: darkMode ? '#e2e8f0' : '#475467',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                }}
-              >
-                🏠 Back to landing
-              </button>
-            </div>
           </section>
 
-          {/* MIDDLE PANEL: Round Breakdown */}          <section
+          {/* MIDDLE PANEL: Round Breakdown */}
+          <section
             style={{
               borderRadius: 20,
               background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
@@ -816,6 +732,104 @@ export default function Game() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          {/* BOTTOM PANEL: Auto-save Status and Action Buttons */}
+          <section
+            style={{
+              borderRadius: 24,
+              padding: '28px 32px',
+              background: darkMode ? 'rgba(15,23,42,0.75)' : '#fff',
+              boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
+              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
+              display: 'grid',
+              gap: 20,
+            }}
+          >
+            {/* Auto-save status - subtle indicator */}
+            <div
+              style={{
+                padding: '12px 16px',
+                borderRadius: 12,
+                background: darkMode ? 'rgba(15,23,42,0.55)' : '#f8fafc',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: '0.9rem',
+              }}
+            >
+              {loggingState === 'pending' && (
+                <>
+                  <span style={{ color: darkMode ? '#60a5fa' : '#2563eb' }}>⏳</span>
+                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Saving round results...</span>
+                </>
+              )}
+              {(loggingState === 'success' || loggingState === 'duplicate') && (
+                <>
+                  <span>✅</span>
+                  <span style={{ color: darkMode ? '#86efac' : '#15803d' }}>Round saved successfully</span>
+                </>
+              )}
+              {loggingState === 'error' && (
+                <>
+                  <span>⚠️</span>
+                  <span style={{ color: '#ef4444' }}>Auto-save failed: {logError || 'Unknown error'}</span>
+                  <button
+                    onClick={handleSaveRound}
+                    style={{
+                      marginLeft: 'auto',
+                      padding: '6px 14px',
+                      borderRadius: 8,
+                      border: '1px solid #ef4444',
+                      background: 'transparent',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    Retry
+                  </button>
+                </>
+              )}
+              {loggingState === 'idle' && (
+                <>
+                  <span>💾</span>
+                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Preparing to save...</span>
+                </>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <button
+                onClick={handlePlayAgain}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 999,
+                  border: 'none',
+                  backgroundColor: '#2563eb',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                🔁 Play another round
+              </button>
+              <button
+                onClick={handleReturnHome}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 999,
+                  border: 'none',
+                  backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
+                  color: darkMode ? '#e2e8f0' : '#475467',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                🏠 Back to landing
+              </button>
             </div>
           </section>
         </div>
