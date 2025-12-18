@@ -8,23 +8,39 @@ export default function Home() {
   const router = useRouter();
   const { user, isLoading } = useUser();
 
+  // Debug: Check iframe status on mount
+  useEffect(() => {
+    console.log('[DEBUG] Is in iframe?', isInIframe());
+    console.log('[DEBUG] Window self:', window.self);
+    console.log('[DEBUG] Window top:', window.top);
+    console.log('[DEBUG] Window parent:', window.parent);
+  }, []);
+
   const handleGetStarted = () => {
+    console.log('[DEBUG] handleGetStarted called. User:', user);
+
     if (user) {
       router.push('/start');
     } else {
+      const inIframe = isInIframe();
+      console.log('[DEBUG] Is in iframe?', inIframe);
+
       // Check if we're in an iframe and use appropriate auth method
-      if (isInIframe()) {
+      if (inIframe) {
+        console.log('[DEBUG] Using iframe auth method');
         handleIframeAuth('/start',
           () => {
+            console.log('[DEBUG] Auth success callback');
             // Success callback - reload to show authenticated state
             window.location.reload();
           },
           (error) => {
-            console.error('Auth error:', error);
+            console.error('[DEBUG] Auth error callback:', error);
             alert('Authentication failed. Please try again.');
           }
         );
       } else {
+        console.log('[DEBUG] Using normal redirect');
         // Normal redirect for non-iframe context
         router.push('/api/auth/login?returnTo=/start');
       }
@@ -104,15 +120,25 @@ export default function Home() {
             <a
               href="/api/auth/login?returnTo=/start"
               onClick={(e) => {
-                if (isInIframe()) {
+                console.log('[DEBUG] Header Sign in clicked');
+                const inIframe = isInIframe();
+                console.log('[DEBUG] Is in iframe?', inIframe);
+
+                if (inIframe) {
+                  console.log('[DEBUG] Preventing default, using iframe auth');
                   e.preventDefault();
                   handleIframeAuth('/start',
-                    () => window.location.reload(),
+                    () => {
+                      console.log('[DEBUG] Auth success - reloading');
+                      window.location.reload();
+                    },
                     (error) => {
-                      console.error('Auth error:', error);
+                      console.error('[DEBUG] Auth error:', error);
                       alert('Authentication failed. Please try again.');
                     }
                   );
+                } else {
+                  console.log('[DEBUG] Not in iframe, allowing default link behavior');
                 }
               }}
               style={{
