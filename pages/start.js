@@ -540,7 +540,7 @@ export default function Start() {
                 }
               }}
             >
-              {!user ? '🔒 Sign in to Start' : '▶ Start Round'}
+              {!user ? '🔒 Sign in to Start' : 'Start Round'}
             </button>
             {!user && (
               <p style={{
