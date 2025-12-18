@@ -9,7 +9,7 @@ export default function Home() {
     if (user) {
       router.push('/start');
     } else {
-      router.push('/api/auth/login');
+      router.push('/api/auth/login?returnTo=/start');
     }
   };
 
@@ -51,7 +51,7 @@ export default function Home() {
             </div>
           ) : (
             /* eslint-disable-next-line @next/next/no-html-link-for-pages */
-            <a href="/api/auth/login" style={{
+            <a href="/api/auth/login?returnTo=/start" style={{
               padding: '10px 24px',
               borderRadius: 999,
               background: '#8B7355',

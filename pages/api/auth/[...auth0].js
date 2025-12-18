@@ -9,7 +9,7 @@ export default handleAuth({
         authorizationParams: {
           prompt: 'login',
         },
-        returnTo: Array.isArray(returnTo) ? returnTo[0] : returnTo || '/game',
+        returnTo: Array.isArray(returnTo) ? returnTo[0] : returnTo || '/start',
       });
     } catch (error) {
       console.error('❌ [AUTH] Login error:', error);

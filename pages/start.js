@@ -144,7 +144,7 @@ export default function Start() {
                 </p>
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
-                  href="/api/auth/login"
+                  href="/api/auth/login?returnTo=/start"
                   style={{
                     display: 'inline-block',
                     padding: '14px 32px',
