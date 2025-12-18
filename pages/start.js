@@ -89,52 +89,6 @@ export default function Start() {
     }
   }, [user, isLoading]);
 
-  // Check if we should show redirect message
-  const showRedirectMessage = user && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('fromDrupal') === 'true';
-
-  if (showRedirectMessage) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
-        fontFamily: '"Times New Roman", Times, serif'
-      }}>
-        <div style={{
-          textAlign: 'center',
-          background: 'rgba(255,255,255,0.9)',
-          padding: 60,
-          borderRadius: 20,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-        }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: 20, color: '#3E2723' }}>
-            ✅ Authentication Successful!
-          </h1>
-          <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: 30 }}>
-            Redirecting you back to the page...
-          </p>
-          <div style={{
-            width: 50,
-            height: 50,
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #8B7355',
-            borderRadius: '50%',
-            margin: '0 auto',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
