@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
 import GameSettings from '../src/components/game/GameSettings';
+import { isInIframe, handleIframeAuth } from '../src/utils/iframeDetector';
 
 const getUniqueConditions = () => {
   const all = data
@@ -145,6 +146,15 @@ export default function Start() {
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a
                   href="/api/auth/login?returnTo=/start"
+                  onClick={(e) => {
+                    if (isInIframe()) {
+                      e.preventDefault();
+                      handleIframeAuth('/start',
+                        () => window.location.reload(),
+                        (error) => console.error('Auth error:', error)
+                      );
+                    }
+                  }}
                   style={{
                     display: 'inline-block',
                     padding: '14px 32px',
@@ -155,7 +165,8 @@ export default function Start() {
                     fontSize: '1.1rem',
                     fontWeight: 600,
                     boxShadow: '0 4px 12px rgba(139,115,85,0.3)',
-                    fontFamily: '"Times New Roman", Times, serif'
+                    fontFamily: '"Times New Roman", Times, serif',
+                    cursor: 'pointer'
                   }}
                 >
                   Sign in with Columbia Google

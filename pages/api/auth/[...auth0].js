@@ -1,4 +1,5 @@
 import { handleAuth, handleLogin, handleCallback } from '@auth0/nextjs-auth0';
+import authConfig from '../../../src/config/auth.config';
 
 export default handleAuth({
   async login(req, res) {
@@ -10,6 +11,7 @@ export default handleAuth({
           prompt: 'login',
         },
         returnTo: Array.isArray(returnTo) ? returnTo[0] : returnTo || '/start',
+        ...authConfig,
       });
     } catch (error) {
       console.error('❌ [AUTH] Login error:', error);
@@ -23,6 +25,7 @@ export default handleAuth({
           console.log('✅ [AUTH] Callback successful for:', session.user.email);
           return session;
         },
+        ...authConfig,
       });
     } catch (error) {
       console.error('❌ [AUTH] Callback error:', error.message);
