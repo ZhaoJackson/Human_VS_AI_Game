@@ -12,15 +12,16 @@ export function SessionStats({ sessionStats, darkMode = false }) {
     return (
         <section
             style={{
-                borderRadius: 20,
-                padding: '24px 28px',
-                background: darkMode ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.05)',
-                border: darkMode ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(99,102,241,0.2)',
-                marginBottom: 24,
+                borderRadius: 24,
+                padding: '36px 32px',
+                background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <span style={{ fontSize: '1.5rem' }}>📊</span>
+                <span style={{ fontSize: '1.5rem' }}></span>
                 <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>
                     Session Summary
                 </h3>

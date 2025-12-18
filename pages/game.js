@@ -10,12 +10,13 @@ import GameSettings from '../src/components/game/GameSettings';
 import { SessionStats } from '../src/components/game/SessionStats';
 
 export default function Game() {
-  const { darkMode, gameMode, timeLimit, fontSize } = useGame();
+  const { darkMode, timeLimit, fontSize } = useGame();
   const { user } = useUser();
   const { sessionStats, addRoundToSession, clearSession } = useSession();
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
+  const [activeGameMode, setActiveGameMode] = useState('swipe');
   const [shuffledData, setShuffledData] = useState([]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -30,7 +31,7 @@ export default function Game() {
   const [isHumanFirst, setIsHumanFirst] = useState(true);
   const [questionHistory, setQuestionHistory] = useState([]);
   const [roundId, setRoundId] = useState('');
-  const [loggingState, setLoggingState] = useState('idle'); // idle | pending | success | error | duplicate
+  const [loggingState, setLoggingState] = useState('idle');
   const [logError, setLogError] = useState('');
   const [formCompleted, setFormCompleted] = useState(false);
   const [roundIdCopied, setRoundIdCopied] = useState(false);
@@ -183,10 +184,15 @@ export default function Game() {
       ? router.query.theme[0]
       : router.query.theme || '';
 
+    const incomingMode = Array.isArray(router.query.mode)
+      ? router.query.mode[0]
+      : router.query.mode || 'swipe';
+
     if (incomingTheme !== selectedTheme) {
       setSelectedTheme(incomingTheme);
     }
 
+    setActiveGameMode(incomingMode);
     startGame();
   }, [router.isReady]);
 
@@ -451,7 +457,7 @@ export default function Game() {
     const handleKeyPress = (e) => {
       if (!gameStarted || finished) return;
 
-      if (gameMode === 'swipe') {
+      if (activeGameMode === 'swipe') {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           handleSwipe('left');
@@ -464,7 +470,62 @@ export default function Game() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameStarted, finished, gameMode, handleSwipe]);
+  }, [gameStarted, finished, activeGameMode, handleSwipe]);
+
+  const renderHeader = () => (
+    <header style={{
+      padding: '20px 40px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      background: 'rgba(139,115,85,0.25)',
+      backdropFilter: 'blur(10px)'
+    }}>
+      <div style={{
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        fontFamily: '"Times New Roman", Times, serif',
+        color: darkMode ? '#fff' : '#3E2723'
+      }}>
+        Turing Test by Social Intervention Group
+      </div>
+      {finished ? (
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            padding: '10px 24px',
+            borderRadius: 999,
+            background: '#8B7355',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            fontFamily: '"Times New Roman", Times, serif'
+          }}
+        >
+          Home
+        </button>
+      ) : (
+        <button
+          onClick={() => setShowSettings(true)}
+          style={{
+            padding: '10px 24px',
+            borderRadius: 999,
+            background: '#8B7355',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            fontFamily: '"Times New Roman", Times, serif'
+          }}
+        >
+          Settings
+        </button>
+      )}
+    </header>
+  );
 
 
   if (finished) {
@@ -477,264 +538,213 @@ export default function Game() {
           position: 'relative',
           minHeight: '100vh',
           width: '100%',
-          padding: '40px 20px 80px',
-          background: darkMode ? '#020617' : '#f5f7fb',
+          background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
           color: darkMode ? '#e2e8f0' : '#0f172a',
         }}
       >
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 32 }}>
-          {/* TOP PANEL: Score and Stats */}
-          <section
-            style={{
-              borderRadius: 24,
-              padding: '36px 32px',
-              background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
-              display: 'grid',
-              gap: 28,
-            }}
-          >
-            <div>
-              <h1 style={{ fontSize: '2.25rem', marginBottom: 12 }}>Round complete 🎯</h1>
-              <p style={{ margin: 0, color: darkMode ? '#c7d2fe' : '#475467' }}>
-                Theme: {themeLabel} · Accuracy {accuracyPercent}% · {humanCorrect} human answers spotted
-              </p>
-            </div>
+        {renderHeader()}
+        {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
 
-            <div
+        <div style={{ padding: '40px 20px 80px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 32 }}>
+            {/* TOP PANEL: Score and Stats */}
+            <section
               style={{
+                borderRadius: 24,
+                padding: '36px 32px',
+                background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: 16,
+                gap: 28,
               }}
             >
-              <div
-                style={{
-                  padding: '18px 20px',
-                  borderRadius: 18,
-                  background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>Score</p>
-                <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{score}</p>
-                <p style={{ margin: '4px 0 0', fontSize: 14, opacity: 0.75 }}>out of {totalQuestions}</p>
-              </div>
-              <div
-                style={{
-                  padding: '18px 20px',
-                  borderRadius: 18,
-                  background: darkMode ? 'rgba(22,163,74,0.2)' : 'rgba(34,197,94,0.12)',
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                  Human reads
+              <div>
+                <h1 style={{ fontSize: '2.25rem', marginBottom: 12 }}>Round complete</h1>
+                <p style={{ margin: 0, color: darkMode ? '#c7d2fe' : '#475467' }}>
+                  Theme: {themeLabel} · Accuracy {accuracyPercent}% · {humanCorrect} human answers spotted
                 </p>
-                <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{humanCorrect}</p>
               </div>
+
               <div
                 style={{
-                  padding: '18px 20px',
-                  borderRadius: 18,
-                  background: darkMode ? 'rgba(244,114,182,0.18)' : 'rgba(236,72,153,0.12)',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: 16,
                 }}
               >
-                <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                  Avg time
-                </p>
-                <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{averageDisplay}</p>
+                <div
+                  style={{
+                    padding: '18px 20px',
+                    borderRadius: 18,
+                    background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>Score</p>
+                  <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{score}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 14, opacity: 0.75 }}>out of {totalQuestions}</p>
+                </div>
+                <div
+                  style={{
+                    padding: '18px 20px',
+                    borderRadius: 18,
+                    background: darkMode ? 'rgba(22,163,74,0.2)' : 'rgba(34,197,94,0.12)',
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                    Human reads
+                  </p>
+                  <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{humanCorrect}</p>
+                </div>
+                <div
+                  style={{
+                    padding: '18px 20px',
+                    borderRadius: 18,
+                    background: darkMode ? 'rgba(244,114,182,0.18)' : 'rgba(236,72,153,0.12)',
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                    Avg time
+                  </p>
+                  <p style={{ margin: '6px 0 0', fontSize: 32, fontWeight: 700 }}>{averageDisplay}</p>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Session Stats - Shows cumulative results */}
-          <SessionStats sessionStats={sessionStats} darkMode={darkMode} />
+            {/* Session Stats - Shows cumulative results */}
+            <SessionStats sessionStats={sessionStats} darkMode={darkMode} />
 
-          {/* MIDDLE PANEL: Round Breakdown */}
-          <section
-            style={{
-              borderRadius: 20,
-              background: darkMode ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.7)',
-              backdropFilter: 'blur(20px)',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
-              boxShadow: darkMode ? '0 25px 50px rgba(15,23,42,0.45)' : '0 25px 50px rgba(15,23,42,0.12)',
-              overflow: 'hidden',
-            }}
-          >
-            <div
+            {/* MIDDLE PANEL: Round Breakdown */}
+            <section
               style={{
-                padding: '20px 24px',
-                borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                borderRadius: 20,
+                background: darkMode ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(20px)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
+                boxShadow: darkMode ? '0 25px 50px rgba(15,23,42,0.45)' : '0 25px 50px rgba(15,23,42,0.12)',
+                overflow: 'hidden',
               }}
             >
-              <h2 style={{ margin: 0 }}>Round breakdown</h2>
-            </div>
-            <div style={{ maxHeight: '60vh', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
-                <thead>
-                  <tr
-                    style={{
-                      background: darkMode ? 'rgba(30,41,59,0.95)' : '#f8fafc',
-                      color: darkMode ? '#cbd5f5' : '#475467',
-                    }}
-                  >
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>#</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>Prompt</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>Human response</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>AI response</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>You chose</th>
-                    <th style={{ padding: '14px 16px', textAlign: 'left' }}>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {questionHistory.map((question, idx) => (
+              <div
+                style={{
+                  padding: '20px 24px',
+                  borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                }}
+              >
+                <h2 style={{ margin: 0 }}>Round breakdown</h2>
+              </div>
+              <div style={{ maxHeight: '60vh', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
+                  <thead>
                     <tr
-                      key={idx}
                       style={{
-                        borderBottom: darkMode ? '1px solid rgba(148,163,184,0.15)' : '1px solid #e2e8f0',
-                        background: question.correct
-                          ? darkMode
-                            ? 'rgba(22,163,74,0.1)'
-                            : 'rgba(187,247,208,0.35)'
-                          : darkMode
-                            ? 'rgba(239,68,68,0.12)'
-                            : 'rgba(254,226,226,0.6)',
+                        background: darkMode ? 'rgba(30,41,59,0.95)' : '#f8fafc',
+                        color: darkMode ? '#cbd5f5' : '#475467',
                       }}
                     >
-                      <td style={{ padding: '14px 16px', fontWeight: 600 }}>{question.questionNumber}</td>
-                      <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.prompt}</td>
-                      <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.humanResponse}</td>
-                      <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.aiResponse}</td>
-                      <td style={{ padding: '14px 16px' }}>{question.userChoice}</td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '4px 12px',
-                            borderRadius: 999,
-                            fontWeight: 600,
-                            background: question.correct
-                              ? darkMode
-                                ? 'rgba(34,197,94,0.25)'
-                                : 'rgba(34,197,94,0.18)'
-                              : darkMode
-                                ? 'rgba(248,113,113,0.25)'
-                                : 'rgba(248,113,113,0.18)',
-                            color: question.correct ? '#15803d' : '#b91c1c',
-                          }}
-                        >
-                          {question.correct ? '✅ Correct' : '❌ Incorrect'}
-                          <span style={{ fontSize: 12, opacity: 0.8 }}>Truth: {question.correctAnswer}</span>
-                        </span>
-                      </td>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>#</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>Prompt</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>Human response</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>AI response</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>You chose</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>Result</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {questionHistory.map((question, idx) => (
+                      <tr
+                        key={idx}
+                        style={{
+                          borderBottom: darkMode ? '1px solid rgba(148,163,184,0.15)' : '1px solid #e2e8f0',
+                          background: question.correct
+                            ? darkMode
+                              ? 'rgba(22,163,74,0.1)'
+                              : 'rgba(187,247,208,0.35)'
+                            : darkMode
+                              ? 'rgba(239,68,68,0.12)'
+                              : 'rgba(254,226,226,0.6)',
+                        }}
+                      >
+                        <td style={{ padding: '14px 16px', fontWeight: 600 }}>{question.questionNumber}</td>
+                        <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.prompt}</td>
+                        <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.humanResponse}</td>
+                        <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.aiResponse}</td>
+                        <td style={{ padding: '14px 16px' }}>{question.userChoice}</td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              padding: '4px 12px',
+                              borderRadius: 999,
+                              fontWeight: 600,
+                              background: question.correct
+                                ? darkMode
+                                  ? 'rgba(34,197,94,0.25)'
+                                  : 'rgba(34,197,94,0.18)'
+                                : darkMode
+                                  ? 'rgba(248,113,113,0.25)'
+                                  : 'rgba(248,113,113,0.18)',
+                              color: question.correct ? '#15803d' : '#b91c1c',
+                            }}
+                          >
+                            {question.correct ? '✅ Correct' : '❌ Incorrect'}
+                            <span style={{ fontSize: 12, opacity: 0.8 }}>Truth: {question.correctAnswer}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-          {/* BOTTOM PANEL: Auto-save Status and Action Buttons */}
-          <section
-            style={{
-              borderRadius: 24,
-              padding: '28px 32px',
-              background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
-              display: 'grid',
-              gap: 20,
-            }}
-          >
-            {/* Auto-save status - subtle indicator */}
-            <div
+            {/* BOTTOM PANEL: Action Buttons */}
+            <section
               style={{
-                padding: '12px 16px',
-                borderRadius: 12,
-                background: darkMode ? 'rgba(15,23,42,0.55)' : '#f8fafc',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                fontSize: '0.9rem',
+                borderRadius: 24,
+                padding: '28px 32px',
+                background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
               }}
             >
-              {loggingState === 'pending' && (
-                <>
-                  <span style={{ color: darkMode ? '#60a5fa' : '#2563eb' }}>⏳</span>
-                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Saving round results...</span>
-                </>
-              )}
-              {(loggingState === 'success' || loggingState === 'duplicate') && (
-                <>
-                  <span>✅</span>
-                  <span style={{ color: darkMode ? '#86efac' : '#15803d' }}>Round saved successfully</span>
-                </>
-              )}
-              {loggingState === 'error' && (
-                <>
-                  <span>⚠️</span>
-                  <span style={{ color: '#ef4444' }}>Auto-save failed: {logError || 'Unknown error'}</span>
-                  <button
-                    onClick={handleSaveRound}
-                    style={{
-                      marginLeft: 'auto',
-                      padding: '6px 14px',
-                      borderRadius: 8,
-                      border: '1px solid #ef4444',
-                      background: 'transparent',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    Retry
-                  </button>
-                </>
-              )}
-              {loggingState === 'idle' && (
-                <>
-                  <span>💾</span>
-                  <span style={{ color: darkMode ? '#94a3b8' : '#667085' }}>Preparing to save...</span>
-                </>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-              <button
-                onClick={handlePlayAgain}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: 999,
-                  border: 'none',
-                  backgroundColor: '#2563eb',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                }}
-              >
-                🔁 Play another round
-              </button>
-              <button
-                onClick={handleReturnHome}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: 999,
-                  border: 'none',
-                  backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                  color: darkMode ? '#e2e8f0' : '#475467',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                }}
-              >
-                🏠 Back to landing
-              </button>
-            </div>
-          </section>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                <button
+                  onClick={handlePlayAgain}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: 999,
+                    border: 'none',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Another Round
+                </button>
+                <button
+                  onClick={handleReturnHome}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: 999,
+                    border: 'none',
+                    backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
+                    color: darkMode ? '#e2e8f0' : '#475467',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                  }}
+                >
+                  Selection Category
+                </button>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     );
@@ -743,225 +753,236 @@ export default function Game() {
   return (
     <div
       style={{
+        position: 'relative',
         minHeight: '100vh',
-        padding: '40px 20px 80px',
+        padding: '0 20px 80px',
         color: darkMode ? '#e2e8f0' : '#0f172a',
-        background: darkMode ? '#020617' : '#f5f7fb',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 32
+        width: '100%',
+        background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)'
       }}
     >
-      <div style={{ maxWidth: 800, width: '100%', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '2rem', marginBottom: 8 }}>Human or AI?</h2>
-        {currentItem && (
-          <>
-            <p style={{ fontSize: '1.05rem', marginBottom: 12 }}>
-              <strong>Prompt:</strong> {currentItem.prompt}
-            </p>
-            <p style={{ color: darkMode ? '#94a3b8' : '#475467', marginBottom: 16 }}>
-              Question {index + 1} of {shuffledData.length}
-            </p>
-            {/* Timer removed - no time pressure */}
-          </>
-        )}
-      </div>
+      {renderHeader()}
+      {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
 
-      {gameMode === 'swipe' ? (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 820,
-            display: 'grid',
-            gap: 24,
-            textAlign: 'center'
-          }}
-        >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 32,
+          padding: '40px 0'
+        }}
+      >
+        <div style={{ maxWidth: 800, width: '100%', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '2rem', marginBottom: 8 }}>Human or AI?</h2>
+          {currentItem && (
+            <>
+              <p style={{ fontSize: '1.05rem', marginBottom: 12 }}>
+                <strong>Prompt:</strong> {currentItem.prompt}
+              </p>
+              <p style={{ color: darkMode ? '#94a3b8' : '#475467', marginBottom: 16 }}>
+                Question {index + 1} of {shuffledData.length}
+              </p>
+              {/* Timer removed - no time pressure */}
+            </>
+          )}
+        </div>
+
+        {activeGameMode === 'swipe' ? (
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 12,
-              fontSize: '0.95rem',
-              color: darkMode ? '#94a3b8' : '#475467'
+              width: '100%',
+              maxWidth: 820,
+              display: 'grid',
+              gap: 24,
+              textAlign: 'center'
             }}
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '2rem' }}>🤖</span>
-              Swipe left for <strong>AI</strong>
-            </span>
-            <span
+            <div
               style={{
-                padding: '6px 12px',
-                borderRadius: 999,
-                background: darkMode ? 'rgba(148,163,184,0.15)' : '#e2e8f0',
-                fontWeight: 600
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: '0.95rem',
+                color: darkMode ? '#94a3b8' : '#475467'
               }}
             >
-              Use ← / →
-            </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <strong>Human</strong> swipe right
-              <span style={{ fontSize: '2rem' }}>👤</span>
-            </span>
-          </div>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '2rem' }}>🤖</span>
+                Swipe left for <strong>AI</strong>
+              </span>
+              <span
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 999,
+                  background: darkMode ? 'rgba(148,163,184,0.15)' : '#e2e8f0',
+                  fontWeight: 600
+                }}
+              >
+                Use ← / →
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <strong>Human</strong> swipe right
+                <span style={{ fontSize: '2rem' }}>👤</span>
+              </span>
+            </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <AnimatePresence>
+                {responseToShow && (
+                  <motion.div
+                    key={index}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    onDragEnd={(e, info) => {
+                      if (info.offset.x > 100) handleSwipe('right');
+                      else if (info.offset.x < -100) handleSwipe('left');
+                    }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    style={{
+                      width: '100%',
+                      maxWidth: 480,
+                      padding: '32px 28px',
+                      background: darkMode ? 'rgba(15,23,42,0.85)' : '#fff',
+                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      borderRadius: 28,
+                      boxShadow: darkMode ? '0 30px 50px rgba(15,23,42,0.55)' : '0 30px 60px rgba(15,23,42,0.12)',
+                      cursor: 'grab',
+                      lineHeight: 1.6
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'relative',
+                        minHeight: 180,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {responseToShow}
+                    </div>
+                    <p
+                      style={{
+                        fontSize: '0.85rem',
+                        color: darkMode ? '#94a3b8' : '#667085',
+                        marginTop: 20,
+                        display: 'inline-flex',
+                        gap: 8,
+                        alignItems: 'center',
+                        padding: '6px 12px',
+                        borderRadius: 999,
+                        background: darkMode ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)'
+                      }}
+                    >
+                      <span>👆</span> Drag the card or press the arrow keys.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 920,
+              display: 'grid',
+              gap: 24
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '0.95rem',
+                color: darkMode ? '#94a3b8' : '#475467'
+              }}
+            >
+              <span>Tap the response you believe came from a human writer.</span>
+            </div>
+
             <AnimatePresence>
-              {responseToShow && (
-                <motion.div
-                  key={index}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  onDragEnd={(e, info) => {
-                    if (info.offset.x > 100) handleSwipe('right');
-                    else if (info.offset.x < -100) handleSwipe('left');
-                  }}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -30 }}
+              {currentItem && (
+                <div
                   style={{
-                    width: '100%',
-                    maxWidth: 480,
-                    padding: '32px 28px',
-                    background: darkMode ? 'rgba(15,23,42,0.85)' : '#fff',
-                    border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
-                    borderRadius: 28,
-                    boxShadow: darkMode ? '0 30px 50px rgba(15,23,42,0.55)' : '0 30px 60px rgba(15,23,42,0.12)',
-                    cursor: 'grab',
-                    lineHeight: 1.6
+                    display: 'grid',
+                    gap: 20,
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
                   }}
                 >
-                  <div
+                  <motion.div
+                    key={`response-1-${index}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
                     style={{
-                      position: 'relative',
-                      minHeight: 180,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      padding: '28px 24px',
+                      background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
+                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      borderRadius: 24,
+                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
+                      cursor: 'pointer',
+                      display: 'grid',
+                      gap: 16
                     }}
+                    onClick={() => handleClick(true)}
                   >
-                    {responseToShow}
-                  </div>
-                  <p
+                    <span
+                      style={{
+                        fontSize: '0.85rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: 1.6,
+                        color: darkMode ? '#c7d2fe' : '#6366f1'
+                      }}
+                    >
+                      Option A
+                    </span>
+                    <div style={{ lineHeight: 1.6 }}>
+                      {isHumanFirst ? currentItem.human : currentItem.ai}
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    key={`response-2-${index}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
                     style={{
-                      fontSize: '0.85rem',
-                      color: darkMode ? '#94a3b8' : '#667085',
-                      marginTop: 20,
-                      display: 'inline-flex',
-                      gap: 8,
-                      alignItems: 'center',
-                      padding: '6px 12px',
-                      borderRadius: 999,
-                      background: darkMode ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)'
+                      padding: '28px 24px',
+                      background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
+                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      borderRadius: 24,
+                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
+                      cursor: 'pointer',
+                      display: 'grid',
+                      gap: 16
                     }}
+                    onClick={() => handleClick(false)}
                   >
-                    <span>👆</span> Drag the card or press the arrow keys.
-                  </p>
-                </motion.div>
+                    <span
+                      style={{
+                        fontSize: '0.85rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: 1.6,
+                        color: darkMode ? '#c7d2fe' : '#6366f1'
+                      }}
+                    >
+                      Option B
+                    </span>
+                    <div style={{ lineHeight: 1.6 }}>
+                      {isHumanFirst ? currentItem.ai : currentItem.human}
+                    </div>
+                  </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
-        </div>
-      ) : (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 920,
-            display: 'grid',
-            gap: 24
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '0.95rem',
-              color: darkMode ? '#94a3b8' : '#475467'
-            }}
-          >
-            <span>Tap the response you believe came from a human writer.</span>
-          </div>
-
-          <AnimatePresence>
-            {currentItem && (
-              <div
-                style={{
-                  display: 'grid',
-                  gap: 20,
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
-                }}
-              >
-                <motion.div
-                  key={`response-1-${index}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -30 }}
-                  style={{
-                    padding: '28px 24px',
-                    background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
-                    border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
-                    borderRadius: 24,
-                    boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
-                    cursor: 'pointer',
-                    display: 'grid',
-                    gap: 16
-                  }}
-                  onClick={() => handleClick(true)}
-                >
-                  <span
-                    style={{
-                      fontSize: '0.85rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: 1.6,
-                      color: darkMode ? '#c7d2fe' : '#6366f1'
-                    }}
-                  >
-                    Option A
-                  </span>
-                  <div style={{ lineHeight: 1.6 }}>
-                    {isHumanFirst ? currentItem.human : currentItem.ai}
-                  </div>
-                </motion.div>
-                <motion.div
-                  key={`response-2-${index}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -30 }}
-                  style={{
-                    padding: '28px 24px',
-                    background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
-                    border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
-                    borderRadius: 24,
-                    boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
-                    cursor: 'pointer',
-                    display: 'grid',
-                    gap: 16
-                  }}
-                  onClick={() => handleClick(false)}
-                >
-                  <span
-                    style={{
-                      fontSize: '0.85rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: 1.6,
-                      color: darkMode ? '#c7d2fe' : '#6366f1'
-                    }}
-                  >
-                    Option B
-                  </span>
-                  <div style={{ lineHeight: 1.6 }}>
-                    {isHumanFirst ? currentItem.ai : currentItem.human}
-                  </div>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

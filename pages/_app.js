@@ -21,14 +21,37 @@ function DarkModeHandler() {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <UserProvider user={pageProps.user}>
-      <SessionProvider>
-        <GameProvider>
-          <DarkModeHandler />
-          <Component {...pageProps} />
-        </GameProvider>
-      </SessionProvider>
-    </UserProvider>
+    <>
+      <style jsx global>{`
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        *::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        * {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Ensure body and html take full height */
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow-x: hidden;
+        }
+      `}</style>
+      <UserProvider user={pageProps.user}>
+        <SessionProvider>
+          <GameProvider>
+            <DarkModeHandler />
+            <Component {...pageProps} />
+          </GameProvider>
+        </SessionProvider>
+      </UserProvider>
+    </>
   );
 }
 

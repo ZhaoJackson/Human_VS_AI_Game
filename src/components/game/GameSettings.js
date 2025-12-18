@@ -6,43 +6,31 @@ export default function GameSettings({ onClose }) {
         darkMode,
         setDarkMode,
         fontSize,
-        setFontSize,
-        timeLimit,
-        setTimeLimit,
-        gameMode,
-        setGameMode
+        setFontSize
     } = useGame();
 
     const [tempSettings, setTempSettings] = useState({
         darkMode,
-        fontSize,
-        timeLimit,
-        gameMode
+        fontSize
     });
 
     useEffect(() => {
         setTempSettings({
             darkMode,
-            fontSize,
-            timeLimit,
-            gameMode
+            fontSize
         });
-    }, [darkMode, fontSize, timeLimit, gameMode]);
+    }, [darkMode, fontSize]);
 
     const handleConfirm = () => {
         setDarkMode(tempSettings.darkMode);
         setFontSize(tempSettings.fontSize);
-        setTimeLimit(tempSettings.timeLimit);
-        setGameMode(tempSettings.gameMode);
         onClose();
     };
 
     const handleReset = () => {
         setTempSettings({
             darkMode,
-            fontSize,
-            timeLimit,
-            gameMode
+            fontSize
         });
     };
 
@@ -70,21 +58,38 @@ export default function GameSettings({ onClose }) {
                 <div style={{ marginTop: '20px' }}>
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '5px' }}>
-                            Dark Mode
+                            Theme
                         </label>
-                        <button
-                            onClick={() => setTempSettings(prev => ({ ...prev, darkMode: !prev.darkMode }))}
-                            style={{
-                                padding: '8px 16px',
-                                borderRadius: '4px',
-                                backgroundColor: tempSettings.darkMode ? '#666' : '#0070f3',
-                                color: '#fff',
-                                border: 'none',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {tempSettings.darkMode ? '🌙 Dark' : '☀️ Light'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                onClick={() => setTempSettings(prev => ({ ...prev, darkMode: false }))}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    backgroundColor: !tempSettings.darkMode ? '#0070f3' : '#666',
+                                    color: '#fff',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    flex: 1
+                                }}
+                            >
+                                ☀️ Light
+                            </button>
+                            <button
+                                onClick={() => setTempSettings(prev => ({ ...prev, darkMode: true }))}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    backgroundColor: tempSettings.darkMode ? '#0070f3' : '#666',
+                                    color: '#fff',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    flex: 1
+                                }}
+                            >
+                                🌙 Dark
+                            </button>
+                        </div>
                     </div>
 
                     <div style={{ marginBottom: '15px' }}>
@@ -100,22 +105,6 @@ export default function GameSettings({ onClose }) {
                             style={{ width: '100%' }}
                         />
                         <span style={{ fontSize: `${tempSettings.fontSize}px` }}>Aa</span>
-                    </div>
-
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>
-                            Time Limit (seconds)
-                        </label>
-                        <input
-                            type="range"
-                            min="30"
-                            max="90"
-                            step="30"
-                            value={tempSettings.timeLimit}
-                            onChange={(e) => setTempSettings(prev => ({ ...prev, timeLimit: Number(e.target.value) }))}
-                            style={{ width: '100%' }}
-                        />
-                        <span>{tempSettings.timeLimit}s</span>
                     </div>
 
                     <div style={{
