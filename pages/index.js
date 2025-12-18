@@ -1,247 +1,358 @@
-import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { data } from '../src/features/game/data/turing_data';
-
-const getUniqueConditions = () => {
-  const all = data
-    .map((item) => item.condition?.trim() || 'Uncategorized')
-    .sort((a, b) => a.localeCompare(b));
-  return Array.from(new Set(all));
-};
 
 export default function Home() {
   const router = useRouter();
-  const [selectedTheme, setSelectedTheme] = useState('');
-  const conditions = useMemo(getUniqueConditions, []);
-  const { user, error, isLoading } = useUser();
-  const authError = router.query.auth === 'domain';
+  const { user, isLoading } = useUser();
 
-  const handleStart = () => {
-    const query = selectedTheme ? `?theme=${encodeURIComponent(selectedTheme)}` : '';
-    router.push(`/game${query}`);
+  const handleGetStarted = () => {
+    if (user) {
+      router.push('/start');
+    } else {
+      router.push('/api/auth/login');
+    }
   };
 
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        marginTop: '12vh',
-        padding: 20,
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
+      color: '#3E2723',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* Header */}
+      <header style={{
+        padding: '20px 40px',
         display: 'flex',
-        flexDirection: 'column',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 24,
-        position: 'relative'
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: 20,
-          right: 24,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12
-        }}
-      >
-        {isLoading ? (
-          <span style={{ color: '#475467', fontSize: '0.9rem' }}>Checking session…</span>
-        ) : user ? (
-          <>
-            <span style={{ fontSize: '0.9rem', color: '#475467' }}>
-              Signed in as <strong>{user.email}</strong>
-            </span>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a
-              href="/api/auth/logout"
-              style={{
-                padding: '8px 16px',
+        background: 'rgba(139,115,85,0.25)',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+          Turing Test by Social Intervention Group
+        </div>
+        {!isLoading && (
+          user ? (
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>{user.email}</span>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              <a href="/api/auth/logout" style={{
+                padding: '10px 20px',
                 borderRadius: 999,
-                border: '1px solid #d0d7de',
-                color: '#475467',
+                background: 'rgba(139,115,85,0.3)',
+                color: '#3E2723',
                 textDecoration: 'none',
-                fontSize: '0.9rem'
-              }}
-            >
-              Log out
-            </a>
-          </>
-        ) : (
-          /* eslint-disable-next-line @next/next/no-html-link-for-pages */
-          <a
-            href="/api/auth/login"
-            style={{
-              padding: '10px 18px',
+                fontSize: '0.9rem',
+                border: '1px solid rgba(139,115,85,0.4)'
+              }}>
+                Log out
+              </a>
+            </div>
+          ) : (
+            /* eslint-disable-next-line @next/next/no-html-link-for-pages */
+            <a href="/api/auth/login" style={{
+              padding: '10px 24px',
               borderRadius: 999,
-              backgroundColor: '#0070f3',
+              background: '#8B7355',
               color: '#fff',
               textDecoration: 'none',
               fontSize: '0.95rem',
-              boxShadow: '0 12px 24px rgba(0,112,243,0.25)'
+              fontWeight: 600
+            }}>
+              Sign in
+            </a>
+          )
+        )}
+      </header>
+
+      {/* Hero Section */}
+      <section style={{
+        textAlign: 'center',
+        padding: '120px 20px 80px',
+        minHeight: '70vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundImage: 'url(/cssw_logo.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative'
+      }}>
+        {/* Dark overlay for better text readability */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 1
+        }}></div>
+
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{
+            fontSize: 'clamp(3rem, 6vw, 5rem)',
+            fontWeight: 700,
+            marginBottom: 30,
+            lineHeight: 1.2,
+            color: '#fff',
+            textShadow: '0 4px 30px rgba(0,0,0,0.5)',
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            Can you tell a human from an AI?
+          </h1>
+
+          <p style={{
+            fontSize: 'clamp(1.3rem, 2.5vw, 1.8rem)',
+            marginBottom: 50,
+            color: '#fff',
+            maxWidth: 800,
+            margin: '0 auto 50px',
+            lineHeight: 1.6,
+            textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            Turing test under mental health context
+          </p>
+
+          <button
+            onClick={() => router.push('/start')}
+            style={{
+              padding: '20px 60px',
+              fontSize: '1.4rem',
+              borderRadius: 999,
+              border: 'none',
+              background: '#fff',
+              color: '#3E2723',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+              transition: 'all 0.3s ease',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 15px 50px rgba(0,0,0,0.5)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.4)';
             }}
           >
-            Sign in with Columbia Google
-          </a>
-        )}
-      </div>
-
-      {error && (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 520,
-            marginBottom: 16,
-            padding: '12px 16px',
-            borderRadius: 12,
-            background: '#fee2e2',
-            color: '#b91c1c'
-          }}
-        >
-          Unable to load session. Please refresh and try again.
+            Play
+          </button>
         </div>
-      )}
+      </section>
 
-      {authError && (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 520,
-            marginBottom: 16,
-            padding: '12px 16px',
-            borderRadius: 12,
-            background: '#fef3c7',
-            color: '#b45309'
-          }}
-        >
-          Access is limited to <code>@columbia.edu</code> accounts. Please sign in with your Columbia email.
+      {/* How to Play Section */}
+      <section style={{
+        background: 'rgba(255,255,255,0.7)',
+        backdropFilter: 'blur(20px)',
+        padding: '60px 20px',
+        borderTop: '1px solid rgba(139,115,85,0.3)',
+        borderBottom: '1px solid rgba(139,115,85,0.3)'
+      }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{
+            fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
+            fontWeight: 700,
+            marginBottom: 30,
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            HOW TO PLAY
+          </h2>
+
+          <p style={{
+            fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
+            lineHeight: 1.8,
+            color: '#3E2723',
+            marginBottom: 20,
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            You will see two responses to mental health-related questions.
+          </p>
+
+          <p style={{
+            fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
+            lineHeight: 1.8,
+            color: '#3E2723',
+            marginBottom: 20,
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            Your task is to determine which response is from a <strong>human</strong> and which one is from <strong>AI</strong>.
+          </p>
+
+          <p style={{
+            fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
+            lineHeight: 1.8,
+            color: '#3E2723',
+            fontFamily: '"Times New Roman", Times, serif'
+          }}>
+            The true source of each response is revealed at the end of each round.
+          </p>
         </div>
-      )}
+      </section>
 
-      <div>
-        <h1>🤖 Turing Test Game</h1>
-        <p>Play a single round, review the outcome, then decide what to do next.</p>
-      </div>
+      {/* Turing Image Section */}
+      <section style={{
+        padding: '100px 20px',
+        minHeight: '50vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundImage: 'url(/turing.webp)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative'
+      }}>
+        {/* Dark overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 1
+        }}></div>
 
-      <div
-        style={{
-          maxWidth: 520,
-          width: '100%',
-          padding: 24,
-          borderRadius: 16,
-          boxShadow: '0 12px 40px rgba(0,0,0,0.08)',
-          background: '#f8f9fb',
-          textAlign: 'left'
-        }}
-      >
-        <h2 style={{ marginBottom: 16 }}>Choose a Topic</h2>
-        <label htmlFor="theme-select" style={{ display: 'block', marginBottom: 8 }}>
-          Which theme should the round use?
-        </label>
-        <select
-          id="theme-select"
-          value={selectedTheme}
-          onChange={(event) => setSelectedTheme(event.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            fontSize: '1rem',
-            borderRadius: 12,
-            border: '1px solid #d0d7de',
-            backgroundColor: '#fff'
-          }}
-        >
-          <option value="">Surprise me (all topics)</option>
-          {conditions.map((condition) => (
-            <option key={condition} value={condition}>
-              {condition}
-            </option>
-          ))}
-        </select>
-        <p style={{ marginTop: 16, lineHeight: 1.6 }}>
-          <span role="img" aria-label="cursor">
-            👆
-          </span>{' '}
-          Pick a topic, then press start to jump straight into the round.
-        </p>
-      </div>
+        <h2 style={{
+          fontSize: 'clamp(2.5rem, 4vw, 3.5rem)',
+          fontWeight: 700,
+          color: '#fff',
+          textShadow: '0 4px 30px rgba(0,0,0,0.7)',
+          position: 'relative',
+          zIndex: 2,
+          fontFamily: '"Times New Roman", Times, serif'
+        }}>
+          Play the Turing Test
+        </h2>
+      </section>
 
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          maxWidth: 520,
-          width: '100%',
-          textAlign: 'left'
-        }}
-      >
-        <h2>How to Play</h2>
-        <div
-          style={{
-            display: 'grid',
-            gap: 8,
-            background: '#fff',
+      {/* Information Section */}
+      <section style={{
+        background: 'rgba(255,255,255,0.7)',
+        backdropFilter: 'blur(20px)',
+        padding: '60px 20px',
+        borderTop: '1px solid rgba(139,115,85,0.3)',
+        borderBottom: '1px solid rgba(139,115,85,0.3)'
+      }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          {/* Test Your AI Detection Skills */}
+          <div style={{ marginBottom: 50 }}>
+            <h3 style={{
+              fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
+              fontWeight: 700,
+              marginBottom: 20,
+              color: '#3E2723',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              Test Your AI Detection Skills
+            </h3>
+            <p style={{
+              fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
+              lineHeight: 1.8,
+              color: '#3E2723',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              Challenge yourself to distinguish between human-written responses and AI-generated content in the context of mental health discussions. Sharpen your ability to detect AI in sensitive conversations.
+            </p>
+          </div>
+
+          {/* How It Works */}
+          <div>
+            <h3 style={{
+              fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
+              fontWeight: 700,
+              marginBottom: 20,
+              color: '#3E2723',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              How It Works
+            </h3>
+            <p style={{
+              fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
+              lineHeight: 1.8,
+              color: '#3E2723',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              Each round presents 3 questions with real responses from Columbia students and AI-generated alternatives. Use your intuition and analytical skills to identify authentic human experiences in mental health contexts.
+            </p>
+          </div>
+
+          {/* Attribution */}
+          <div style={{
+            marginTop: 60,
+            padding: 30,
             borderRadius: 16,
-            padding: 20,
-            border: '1px solid #e6ebf1'
-          }}
-        >
-          <p>
-            <span role="img" aria-label="human icon">
-              👤
-            </span>{' '}
-            Swipe or press <code>→</code> if you believe the response is human.
-          </p>
-          <p>
-            <span role="img" aria-label="robot icon">
-              🤖
-            </span>{' '}
-            Swipe or press <code>←</code> if you think it was written by AI.
-          </p>
-          <p>
-            <span role="img" aria-label="sparkles">
-              ✨
-            </span>{' '}
-            After each round you’ll complete a short Google Form before unlocking the next round.
-          </p>
+            background: 'rgba(255,255,255,0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(139,115,85,0.3)',
+            textAlign: 'center'
+          }}>
+            <p style={{
+              fontSize: '1rem',
+              lineHeight: 1.6,
+              opacity: 0.95,
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              This research tool is designed and maintained by the{' '}
+              <strong>Social Intervention Group</strong> at{' '}
+              <strong>Columbia School of Social Work</strong>
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <button
-        onClick={handleStart}
-        style={{
-          marginTop: 12,
-          padding: '14px 32px',
-          fontSize: '1rem',
-          borderRadius: 999,
-          backgroundColor: '#0070f3',
-          color: 'white',
-          border: 'none',
-          cursor: 'pointer',
-          boxShadow: '0 16px 40px rgba(0, 112, 243, 0.3)',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-        }}
-      >
-        ▶ Start Round
-      </button>
-
-      <div
-        style={{
-          maxWidth: 520,
-          width: '100%',
-          borderRadius: 12,
-          border: '1px solid #e4e7ec',
-          padding: 16,
-          background: '#fff8e6',
-          color: '#7a4b00',
+      {/* Footer */}
+      <footer style={{
+        background: 'rgba(139,115,85,0.4)',
+        backdropFilter: 'blur(10px)',
+        padding: '30px 40px',
+        borderTop: '1px solid rgba(139,115,85,0.4)',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 30,
           fontSize: '0.9rem',
-          lineHeight: 1.6
-        }}
-      >
-        <strong style={{ display: 'block', marginBottom: 4 }}>Privacy notice</strong>
-        We log round stats (email, UNI, score, timing) to a Columbia-owned Google Sheet so we can audit the
-        experiment. Reach us at privacy@yourdomain.edu with questions or deletion requests.
-      </div>
+          opacity: 0.9
+        }}>
+          <span>© 2025 Zichen Zhao</span>
+          <span style={{ opacity: 0.5 }}>•</span>
+          <a href="mailto:zz3043@columbia.edu" style={{
+            color: '#3E2723',
+            textDecoration: 'none',
+            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            transition: 'border-color 0.2s'
+          }}
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            Contact
+          </a>
+          <span style={{ opacity: 0.5 }}>•</span>
+          <a href="/privacy" style={{
+            color: '#3E2723',
+            textDecoration: 'none',
+            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            transition: 'border-color 0.2s'
+          }}
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            Privacy
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

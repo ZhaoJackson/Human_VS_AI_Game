@@ -2,8 +2,18 @@ import Link from 'next/link';
 
 export default function About() {
   return (
-    <div style={{ maxWidth: 700, margin: '10vh auto', padding: '0 24px', fontFamily: 'sans-serif' }}>
-      <h1>👥 About Us</h1>
+    <div style={{
+      maxWidth: 700,
+      margin: '10vh auto',
+      padding: '32px 24px',
+      fontFamily: 'sans-serif',
+      background: 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: 20,
+      border: '1px solid rgba(139,115,85,0.3)',
+      minHeight: '80vh'
+    }}>
+      <h1>About Us</h1>
 
       <p>
         The Turing Test Swipe App is a playful and thought-provoking experiment in human-AI interaction.
@@ -17,14 +27,14 @@ export default function About() {
         against cutting-edge machine responses.
       </p>
 
-      <h2>🎯 Our Mission</h2>
+      <h2>Our Mission</h2>
       <ul>
         <li>Raise awareness about the power and limits of AI-generated text</li>
         <li>Foster critical thinking about what makes language feel human</li>
         <li>Build fun, interactive tools that make AI more accessible</li>
       </ul>
 
-      <h2>👨‍💻 Built by</h2>
+      <h2>Built by</h2>
       <p>
         This project was developed by <strong>Zichen Zhao</strong>, a data scientist and AI researcher passionate
         about ethical AI, mental health technology, and human-centered design.
@@ -45,7 +55,7 @@ export default function About() {
           border: 'none',
           cursor: 'pointer'
         }}>
-          ← Back to Home
+          Home
         </button>
       </Link>
     </div>

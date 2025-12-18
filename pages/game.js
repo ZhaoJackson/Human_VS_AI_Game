@@ -176,6 +176,20 @@ export default function Game() {
     }
   }, [router.isReady, router.query.form, router.query.rid, roundId]);
 
+  useEffect(() => {
+    if (!router.isReady || gameStarted || finished) return;
+
+    const incomingTheme = Array.isArray(router.query.theme)
+      ? router.query.theme[0]
+      : router.query.theme || '';
+
+    if (incomingTheme !== selectedTheme) {
+      setSelectedTheme(incomingTheme);
+    }
+
+    startGame();
+  }, [router.isReady]);
+
   const startGame = () => {
     const filtered = selectedTheme
       ? data.filter(item => item.condition?.trim() === selectedTheme)
@@ -310,7 +324,7 @@ export default function Game() {
 
   const handleReturnHome = () => {
     clearSession();
-    router.push('/');
+    router.push('/start');
   };
 
   const handleOpenFeedbackForm = () => {
@@ -452,127 +466,6 @@ export default function Game() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [gameStarted, finished, gameMode, handleSwipe]);
 
-  if (!gameStarted) {
-    return (
-      <div style={{
-        position: 'relative',
-        minHeight: '100vh',
-        width: '100%',
-        background: darkMode ? '#0b1120' : '#f8f9fb'
-      }}>
-        <div style={{
-          position: 'fixed',
-          top: 20,
-          right: 20,
-          zIndex: 1000
-        }}>
-          <button
-            onClick={() => setShowSettings(true)}
-            style={{
-              padding: '8px 16px',
-              fontSize: `${fontSize * 0.8}px`,
-              borderRadius: '8px',
-              backgroundColor: '#6366f1',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)'
-            }}
-          >
-            ⚙️ Settings
-          </button>
-        </div>
-        {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
-
-        <div style={{
-          textAlign: 'center',
-          marginTop: '12vh',
-          color: darkMode ? '#fff' : '#101828',
-          fontSize: `${fontSize * 0.95}px`,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 28,
-          padding: 20
-        }}>
-          <div style={{ maxWidth: 640 }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: 16 }}>Ready for a fresh round?</h1>
-            <p style={{ lineHeight: 1.6 }}>
-              {selectedTheme
-                ? `You're about to test your instincts on the "${selectedTheme}" theme.`
-                : "We'll mix in prompts from every theme this time."}
-            </p>
-            <p style={{ marginTop: 12, color: darkMode ? '#d0d7ff' : '#475467' }}>
-              Want a different topic? Head back to the home page and pick a new one before starting.
-            </p>
-          </div>
-
-          <div style={{
-            width: '100%',
-            maxWidth: 540,
-            background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
-            borderRadius: 24,
-            padding: '32px 28px',
-            boxShadow: darkMode ? '0 25px 40px rgba(15,23,42,0.45)' : '0 25px 40px rgba(15, 23, 42, 0.15)',
-            border: darkMode ? '1px solid rgba(99,102,241,0.4)' : '1px solid #e2e8f0',
-            textAlign: 'left'
-          }}>
-            <h2 style={{ marginBottom: 16 }}>How this round works</h2>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, lineHeight: 1.7, display: 'grid', gap: 12 }}>
-              <li>
-                <strong>1.</strong> You'll see one prompt at a time. Decide if the response is{' '}
-                <span style={{ color: '#0ea5e9' }}>Human</span> or <span style={{ color: '#f97316' }}>AI</span>.
-              </li>
-              <li>
-                <strong>2.</strong> Use the swipe gesture or the arrow keys <code>←</code> / <code>→</code>.
-              </li>
-              <li>
-                <strong>3.</strong> After the round, complete the Google feedback form to unlock the next game.
-              </li>
-            </ul>
-            <div style={{
-              marginTop: 24,
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12
-            }}>
-              <button
-                onClick={startGame}
-                style={{
-                  flex: '1 1 180px',
-                  padding: '14px 24px',
-                  fontSize: `${fontSize * 0.9}px`,
-                  borderRadius: 999,
-                  backgroundColor: '#0070f3',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 16px 30px rgba(0,112,243,0.35)'
-                }}
-              >
-                ▶ Start Round
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                style={{
-                  flex: '1 1 180px',
-                  padding: '14px 24px',
-                  fontSize: `${fontSize * 0.9}px`,
-                  borderRadius: 999,
-                  backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                  color: darkMode ? '#e2e8f0' : '#475467',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                ← Pick a new topic
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (finished) {
     const themeLabel = selectedTheme || 'Mixed prompts';
@@ -595,9 +488,10 @@ export default function Game() {
             style={{
               borderRadius: 24,
               padding: '36px 32px',
-              background: darkMode ? 'rgba(15,23,42,0.75)' : '#fff',
+              background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(20px)',
               boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
+              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
               display: 'grid',
               gap: 28,
             }}
@@ -661,8 +555,9 @@ export default function Game() {
           <section
             style={{
               borderRadius: 20,
-              background: darkMode ? 'rgba(15,23,42,0.7)' : '#fff',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
+              background: darkMode ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(20px)',
+              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
               boxShadow: darkMode ? '0 25px 50px rgba(15,23,42,0.45)' : '0 25px 50px rgba(15,23,42,0.12)',
               overflow: 'hidden',
             }}
@@ -747,9 +642,10 @@ export default function Game() {
             style={{
               borderRadius: 24,
               padding: '28px 32px',
-              background: darkMode ? 'rgba(15,23,42,0.75)' : '#fff',
+              background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(20px)',
               boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid #e2e8f0',
+              border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
               display: 'grid',
               gap: 20,
             }}
