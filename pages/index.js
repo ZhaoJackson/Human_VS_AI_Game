@@ -12,7 +12,22 @@ export default function Home() {
     if (user) {
       router.push('/start');
     } else {
-      router.push('/api/auth/login?returnTo=/start');
+      // Check if we're in an iframe and use appropriate auth method
+      if (isInIframe()) {
+        handleIframeAuth('/start',
+          () => {
+            // Success callback - reload to show authenticated state
+            window.location.reload();
+          },
+          (error) => {
+            console.error('Auth error:', error);
+            alert('Authentication failed. Please try again.');
+          }
+        );
+      } else {
+        // Normal redirect for non-iframe context
+        router.push('/api/auth/login?returnTo=/start');
+      }
     }
   };
 
@@ -85,16 +100,32 @@ export default function Home() {
               </a>
             </div>
           ) : (
-            /* eslint-disable-next-line @next/next/no-html-link-for-pages */
-            <a href="/api/auth/login?returnTo=/start" style={{
-              padding: '10px 24px',
-              borderRadius: 999,
-              background: '#8B7355',
-              color: '#fff',
-              textDecoration: 'none',
-              fontSize: '0.95rem',
-              fontWeight: 600
-            }}>
+            // eslint-disable-next-line @next/next/no-html-link-for-pages
+            <a
+              href="/api/auth/login?returnTo=/start"
+              onClick={(e) => {
+                if (isInIframe()) {
+                  e.preventDefault();
+                  handleIframeAuth('/start',
+                    () => window.location.reload(),
+                    (error) => {
+                      console.error('Auth error:', error);
+                      alert('Authentication failed. Please try again.');
+                    }
+                  );
+                }
+              }}
+              style={{
+                padding: '10px 24px',
+                borderRadius: 999,
+                background: '#8B7355',
+                color: '#fff',
+                textDecoration: 'none',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
               Sign in
             </a>
           )

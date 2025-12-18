@@ -190,7 +190,10 @@ export default function Start() {
                       e.preventDefault();
                       handleIframeAuth('/start',
                         () => window.location.reload(),
-                        (error) => console.error('Auth error:', error)
+                        (error) => {
+                          console.error('Auth error:', error);
+                          alert('Authentication failed. Please try again.');
+                        }
                       );
                     }
                   }}
