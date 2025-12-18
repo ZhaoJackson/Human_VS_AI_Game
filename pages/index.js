@@ -330,7 +330,7 @@ export default function Home() {
         }}>
           <span>© 2025 Zichen Zhao</span>
           <span style={{ opacity: 0.5 }}>•</span>
-          <a href="mailto:zz3043@columbia.edu" style={{
+          <a href="/contact" style={{
             color: '#3E2723',
             textDecoration: 'none',
             borderBottom: '1px solid rgba(62,39,35,0.3)',
@@ -350,6 +350,17 @@ export default function Home() {
             onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
             onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
             Privacy
+          </a>
+          <span style={{ opacity: 0.5 }}>•</span>
+          <a href="/about" style={{
+            color: '#3E2723',
+            textDecoration: 'none',
+            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            transition: 'border-color 0.2s'
+          }}
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            About
           </a>
         </div>
       </footer>
