@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
+import { isInIframe, handleIframeAuth } from '../src/utils/iframeDetector';
 
 export default function Home() {
   const router = useRouter();
@@ -13,6 +15,38 @@ export default function Home() {
       router.push('/api/auth/login?returnTo=/start');
     }
   };
+
+  // Check if we just returned from auth and should close this window
+  useEffect(() => {
+    if (user && window.opener && sessionStorage.getItem('authInProgress')) {
+      sessionStorage.setItem('authCompleted', 'true');
+      sessionStorage.removeItem('authInProgress');
+
+      try {
+        window.opener.postMessage({ type: 'auth-success', user }, window.location.origin);
+      } catch (e) {
+        console.log('Could not message opener:', e);
+      }
+
+      const closeWindow = () => {
+        alert('Authentication successful! This window will close. Return to the main page to continue.');
+        window.close();
+
+        setTimeout(() => {
+          if (!window.closed) {
+            document.body.innerHTML = `
+              <div style="text-align: center; padding: 50px; font-family: 'Times New Roman', serif;">
+                <h1>✅ Signed In Successfully!</h1>
+                <p style="font-size: 1.2rem; margin: 20px 0;">Please close this window and return to the main page.</p>
+              </div>
+            `;
+          }
+        }, 500);
+      };
+
+      setTimeout(closeWindow, 1000);
+    }
+  }, [user]);
 
   return (
     <div style={{

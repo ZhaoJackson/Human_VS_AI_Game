@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
@@ -32,6 +32,45 @@ export default function Start() {
 
     router.push(`/game?${params.toString()}`);
   };
+
+  // Check if we just returned from auth and should close this window
+  useEffect(() => {
+    // If user is authenticated and this window was opened for auth
+    if (user && window.opener && sessionStorage.getItem('authInProgress')) {
+      // Mark auth as completed
+      sessionStorage.setItem('authCompleted', 'true');
+      sessionStorage.removeItem('authInProgress');
+
+      // Try to send message to opener
+      try {
+        window.opener.postMessage({ type: 'auth-success', user }, window.location.origin);
+      } catch (e) {
+        console.log('Could not message opener:', e);
+      }
+
+      // Show message and close
+      const closeWindow = () => {
+        alert('Authentication successful! This window will close. Please return to the main page.');
+        window.close();
+
+        // If window.close() didn't work, redirect to close instruction
+        setTimeout(() => {
+          if (!window.closed) {
+            document.body.innerHTML = `
+              <div style="text-align: center; padding: 50px; font-family: 'Times New Roman', serif;">
+                <h1>✅ Authentication Successful!</h1>
+                <p style="font-size: 1.2rem; margin: 20px 0;">You can now close this window and return to the main page.</p>
+                <p style="color: #666;">If this window doesn't close automatically, please close it manually.</p>
+              </div>
+            `;
+          }
+        }, 500);
+      };
+
+      // Close after a brief delay
+      setTimeout(closeWindow, 1000);
+    }
+  }, [user]);
 
   return (
     <div style={{
