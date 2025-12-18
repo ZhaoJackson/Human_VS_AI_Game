@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "export": "next build && next export",
-    "lint": "next lint"
+    "lint": "next lint",
+    "convert-data": "node src/scripts/convert-to-turing-data.mjs",
+    "inspect-excel": "node src/scripts/convert-excel-to-js.mjs",
+    "test:auth": "curl -v http://localhost:3000/api/test-auth",
+    "test:health": "curl -v http://localhost:3000/api/health"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^3.5.0",
