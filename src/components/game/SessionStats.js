@@ -1,8 +1,3 @@
-/**
- * SessionStats Component
- * 
- * Displays cumulative session statistics across multiple rounds
- */
 export function SessionStats({ sessionStats, darkMode = false }) {
     const overallAccuracy = sessionStats.totalQuestions > 0
         ? ((sessionStats.totalCorrect / sessionStats.totalQuestions) * 100).toFixed(1)
@@ -11,7 +6,7 @@ export function SessionStats({ sessionStats, darkMode = false }) {
     const sessionDuration = formatDuration(Date.now() - sessionStats.startTime);
 
     if (sessionStats.roundsPlayed === 0) {
-        return null; // Don't show if no rounds played yet
+        return null;
     }
 
     return (
@@ -38,7 +33,6 @@ export function SessionStats({ sessionStats, darkMode = false }) {
                     gap: 16,
                 }}
             >
-                {/* Rounds Played */}
                 <div>
                     <div style={{
                         fontSize: '0.85rem',
@@ -117,9 +111,6 @@ export function SessionStats({ sessionStats, darkMode = false }) {
     );
 }
 
-/**
- * Format duration from milliseconds to readable string
- */
 function formatDuration(ms) {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);

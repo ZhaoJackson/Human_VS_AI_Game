@@ -12,7 +12,7 @@ import { SessionStats } from '../src/components/game/SessionStats';
 export default function Game() {
   const { darkMode, gameMode, timeLimit, fontSize } = useGame();
   const { user } = useUser();
-  const { sessionStats, addRoundToSession } = useSession();
+  const { sessionStats, addRoundToSession, clearSession } = useSession();
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -210,9 +210,6 @@ export default function Game() {
     setLastLoggedRoundId('');
   };
 
-  // Timer removed - no countdown pressure. Time tracking is still done per question for analytics.
-
-  // Load next question or finish round
   useEffect(() => {
     if (shuffledData.length > 0 && index < shuffledData.length) {
       const item = shuffledData[index];
@@ -233,9 +230,6 @@ export default function Game() {
     const correctGuess = (direction === 'right' && isHuman) || (direction === 'left' && !isHuman);
     const timeTaken = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
 
-    // Timer removed - no cleanup needed
-
-    // Add to question history
     setQuestionHistory(prev => [...prev, {
       questionNumber: index + 1,
       prompt: currentItem.prompt,
@@ -267,9 +261,6 @@ export default function Game() {
       : (isHumanFirst ? 'AI' : 'Human');
     const timeTaken = startTime ? Math.round((Date.now() - startTime) / 1000) : null;
 
-    // Timer removed - no cleanup needed
-
-    // Add to question history
     setQuestionHistory(prev => [...prev, {
       questionNumber: index + 1,
       prompt: currentItem.prompt,
@@ -311,7 +302,6 @@ export default function Game() {
       window.localStorage.removeItem('turing:lastRoundId');
       window.localStorage.removeItem('turing:formStatus');
     }
-    // Timer removed - no cleanup needed
   };
 
   const handlePlayAgain = () => {
@@ -319,7 +309,7 @@ export default function Game() {
   };
 
   const handleReturnHome = () => {
-    resetSessionState();
+    clearSession();
     router.push('/');
   };
 
@@ -365,7 +355,6 @@ export default function Game() {
 
     setLoggingState('pending');
 
-    // Create timeout for the request
     const timeoutId = setTimeout(() => {
       console.error('🔴 [FRONTEND] Request timeout after 30 seconds');
       controller.abort();
@@ -385,7 +374,7 @@ export default function Game() {
           score,
           accuracyPct: accuracyForApi,
           avgTimeSeconds: avgTimeForApi,
-          user, // Send user object to bypass slow server-side session check
+          user,
         }),
         signal: controller.signal,
       });
@@ -412,7 +401,6 @@ export default function Game() {
         setLoggingState('success');
         setLastLoggedRoundId(roundId);
 
-        // Add round to session tracking
         addRoundToSession({
           roundId,
           category: selectedTheme || 'Mixed',
@@ -438,7 +426,6 @@ export default function Game() {
     }
   };
 
-  // Auto-save round results when game finishes
   useEffect(() => {
     if (finished && roundId && loggingState === 'idle') {
       console.log('🟢 [AUTO-SAVE] Round finished, triggering auto-save...');
@@ -446,7 +433,6 @@ export default function Game() {
     }
   }, [finished, roundId, loggingState]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (!gameStarted || finished) return;

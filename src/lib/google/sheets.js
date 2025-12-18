@@ -1,16 +1,9 @@
 import { google } from 'googleapis';
 
-/**
- * Google Sheets utility module for Turing App
- * Handles authentication and data operations with Google Sheets API
- */
-
 let sheetsClient = null;
 
 /**
- * Get or create authenticated Google Sheets client
- * Uses service account credentials from environment variables
- * @returns {Promise<Object>} Authenticated Google Sheets API client
+ * @returns {Promise<Object>}
  */
 export async function getSheetsClient() {
     if (sheetsClient) {
@@ -41,15 +34,14 @@ export async function getSheetsClient() {
 }
 
 /**
- * Check if a round ID already exists in the spreadsheet
- * @param {string} spreadsheetId - Google Sheets spreadsheet ID
- * @param {string} sheetName - Sheet/tab name
- * @param {string} roundId - Round ID to check
- * @returns {Promise<boolean>} True if round ID exists, false otherwise
+ * @param {string} spreadsheetId
+ * @param {string} sheetName
+ * @param {string} roundId
+ * @returns {Promise<boolean>}
  */
 export async function checkExistingRound(spreadsheetId, sheetName, roundId) {
     const sheets = await getSheetsClient();
-    const range = `${sheetName}!B:B`; // Column B contains round IDs
+    const range = `${sheetName}!B:B`;
 
     try {
         const { data } = await sheets.spreadsheets.values.get({
@@ -67,10 +59,9 @@ export async function checkExistingRound(spreadsheetId, sheetName, roundId) {
 }
 
 /**
- * Append a new round to the spreadsheet
- * @param {string} spreadsheetId - Google Sheets spreadsheet ID
- * @param {string} sheetName - Sheet/tab name
- * @param {Object} payload - Round data to append
+ * @param {string} spreadsheetId
+ * @param {string} sheetName
+ * @param {Object} payload
  * @returns {Promise<void>}
  */
 export async function appendRound(spreadsheetId, sheetName, payload) {
@@ -93,19 +84,19 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
     const last = session.family_name || session.name?.split(' ')?.slice(1).join(' ') || '';
 
     const row = [
-        timestamp,           // A: timestamp_iso
-        roundId,             // B: round_id
-        session.email || '', // C: email
-        uni,                 // D: uni
-        first,               // E: first_name
-        last,                // F: last_name
-        category,            // G: category
-        numQuestions,        // H: num_questions
-        score,               // I: score
-        accuracyPct,         // J: accuracy_pct
-        avgTimeSeconds,      // K: avg_time_s
-        appVersion,          // L: app_version
-        '',                  // M: notes (empty placeholder)
+        timestamp,
+        roundId,
+        session.email || '',
+        uni,
+        first,
+        last,
+        category,
+        numQuestions,
+        score,
+        accuracyPct,
+        avgTimeSeconds,
+        appVersion,
+        '',
     ];
 
     try {
@@ -125,9 +116,8 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
 }
 
 /**
- * Validate Google Sheets configuration
- * @returns {Object} Configuration object with spreadsheetId and sheetName
- * @throws {Error} If configuration is missing
+ * @returns {Object}
+ * @throws {Error}
  */
 export function validateSheetsConfig() {
     const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;

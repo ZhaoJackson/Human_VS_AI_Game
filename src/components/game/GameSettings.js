@@ -13,15 +13,13 @@ export default function GameSettings({ onClose }) {
         setGameMode
     } = useGame();
 
-    // Temporary state for settings changes
     const [tempSettings, setTempSettings] = useState({
         darkMode,
         fontSize,
         timeLimit,
         gameMode
     });
-
-    // Update temp settings when modal opens
+    
     useEffect(() => {
         setTempSettings({
             darkMode,

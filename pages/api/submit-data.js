@@ -10,7 +10,7 @@ const roundSchema = Joi.object({
     score: Joi.number().integer().min(0).required(),
     accuracyPct: Joi.number().min(0).max(100).required(),
     avgTimeSeconds: Joi.number().min(0).required(),
-    user: Joi.object().optional().unknown(true) // Allow user object
+    user: Joi.object().optional().unknown(true)
 });
 
 export default async function handler(req, res) {
@@ -22,16 +22,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 1. Authentication Check
         console.log('🔵 [SUBMIT-DATA] Checking session...');
 
         let user;
-        // Optimization: Check if user data is provided in body to bypass slow server-side session check
         if (req.body.user) {
-            console.log('⚡ [SUBMIT-DATA] Using client-side user data (fast path)');
+            console.log('[SUBMIT-DATA] Using client-side user data (fast path)');
             user = req.body.user;
         } else {
-            // Fallback to server-side session check (slower)
             const session = await getSession(req, res);
             if (!session?.user) {
                 console.error('❌ [SUBMIT-DATA] No user session found');
@@ -42,7 +39,6 @@ export default async function handler(req, res) {
 
         console.log(`✅ [SUBMIT-DATA] User authenticated: ${user.email}`);
 
-        // 2. Validate Request Body
         console.log('🔵 [SUBMIT-DATA] Validating payload...');
         const { error, value } = roundSchema.validate(req.body);
         if (error) {
@@ -52,9 +48,7 @@ export default async function handler(req, res) {
 
         const { roundId, category, numQuestions, score, accuracyPct, avgTimeSeconds } = value;
 
-        // 3. Check for Duplicates
         console.log(`🔵 [SUBMIT-DATA] Checking for duplicate round: ${roundId}`);
-        // Need to get config to pass to checkExistingRound
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
         const sheetName = process.env.GOOGLE_SHEETS_TAB_NAME || 'round_results';
 
@@ -64,9 +58,7 @@ export default async function handler(req, res) {
             return res.status(200).json({ status: 'duplicate', message: 'Round already logged' });
         }
 
-        // 4. Append to Google Sheets
         console.log('🔵 [SUBMIT-DATA] Appending to Google Sheets...');
-        // Construct payload expected by appendRound
         const payload = {
             roundId,
             category,
@@ -74,7 +66,7 @@ export default async function handler(req, res) {
             score,
             accuracyPct,
             avgTimeSeconds,
-            session: user // Pass the whole user object as session
+            session: user
         };
 
         await appendRound(spreadsheetId, sheetName, payload);

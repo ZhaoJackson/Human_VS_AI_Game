@@ -6,9 +6,8 @@ export function GameProvider({ children }) {
     const [darkMode, setDarkMode] = useState(false);
     const [timeLimit, setTimeLimit] = useState(60);
     const [fontSize, setFontSize] = useState(16);
-    const [gameMode, setGameMode] = useState('swipe'); // 'swipe' or 'click'
+    const [gameMode, setGameMode] = useState('swipe');
 
-    // Load saved settings from localStorage
     useEffect(() => {
         const savedSettings = localStorage.getItem('gameSettings');
         if (savedSettings) {
@@ -19,7 +18,6 @@ export function GameProvider({ children }) {
         }
     }, []);
 
-    // Save settings to localStorage
     useEffect(() => {
         localStorage.setItem('gameSettings', JSON.stringify({ darkMode, fontSize, gameMode }));
     }, [darkMode, fontSize, gameMode]);

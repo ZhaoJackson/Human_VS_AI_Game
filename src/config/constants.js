@@ -1,21 +1,10 @@
-/**
- * Application Constants
- * 
- * Centralized location for all app-wide constants.
- * These values are NOT environment-specific.
- */
-
 export const GAME_CONFIG = {
-    // Game Mechanics
     QUESTIONS_PER_ROUND: 3,
-    DEFAULT_GAME_MODE: 'comparison', // 'swipe' or 'comparison'
-
-    // UI Settings
+    DEFAULT_GAME_MODE: 'comparison',
     DEFAULT_FONT_SIZE: 16,
     MIN_FONT_SIZE: 12,
     MAX_FONT_SIZE: 24,
-
-    // Theme
+    DEFAULT_DARK_MODE: false,
     DEFAULT_DARK_MODE: false,
 };
 

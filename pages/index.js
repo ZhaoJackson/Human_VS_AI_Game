@@ -1,5 +1,3 @@
-// pages/index.js
-
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
@@ -70,7 +68,6 @@ export default function Home() {
             </a>
           </>
         ) : (
-          /* eslint-disable-next-line @next/next/no-html-link-for-pages */
           <a
             href="/api/auth/login"
             style={{

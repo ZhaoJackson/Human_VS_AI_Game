@@ -1,11 +1,6 @@
-/**
- * ResponseOption Component
- * 
- * Visual component for displaying Human/AI response options with clear visual indicators
- */
 export function ResponseOption({
     response,
-    type, // 'human' or 'ai'
+    type,
     onClick,
     isHovered = false,
     darkMode = false

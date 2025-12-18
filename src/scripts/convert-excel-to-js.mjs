@@ -1,17 +1,14 @@
 import XLSX from 'xlsx';
 import fs from 'fs';
 
-// Read the Excel file
 const workbook = XLSX.readFile('./src/features/game/data/Turing Test Data - Coded.xlsx');
 
-// Get the first two sheets (Real and AI)
 const realSheetName = workbook.SheetNames[0];
 const aiSheetName = workbook.SheetNames[1];
 
 const realSheet = workbook.Sheets[realSheetName];
 const aiSheet = workbook.Sheets[aiSheetName];
 
-// Convert sheets to JSON
 const realData = XLSX.utils.sheet_to_json(realSheet);
 const aiData = XLSX.utils.sheet_to_json(aiSheet);
 
@@ -31,16 +28,13 @@ if (aiData.length > 0) {
   console.log(Object.keys(aiData[0]));
 }
 
-// Filter Real data where Column K = 'Y' (consent)
 console.log('\n=== FILTERED DATA (Consent = Y) ===');
 const filteredReal = realData.filter(row => {
-  // Find the consent column (might be named differently)
   const consentKey = Object.keys(row).find(key => key.includes('Consent') || key === 'K' || key.includes('consent'));
   return consentKey && row[consentKey] === 'Y';
 });
 console.log(`Filtered real responses: ${filteredReal.length}`);
 
-// Save intermediate results for inspection
 fs.writeFileSync('./real_data_sample.json', JSON.stringify(realData.slice(0, 5), null, 2));
 fs.writeFileSync('./ai_data_sample.json', JSON.stringify(aiData.slice(0, 5), null, 2));
 fs.writeFileSync('./filtered_real_sample.json', JSON.stringify(filteredReal.slice(0, 5), null, 2));
