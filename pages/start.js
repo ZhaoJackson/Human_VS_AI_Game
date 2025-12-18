@@ -91,7 +91,7 @@ export default function Start() {
 
   // Show redirecting message if came from Drupal
   useEffect(() => {
-    if (user && document.referrer.includes('sig.columbia.edu')) {
+    if (typeof document !== 'undefined' && user && document.referrer.includes('sig.columbia.edu')) {
       const timer = setTimeout(() => {
         // Will be redirected by above useEffect
       }, 100);
@@ -99,7 +99,7 @@ export default function Start() {
     }
   }, [user]);
 
-  const referrer = document.referrer;
+  const referrer = typeof document !== 'undefined' ? document.referrer : '';
   const isDrupalReferrer = referrer && referrer.includes('sig.columbia.edu');
   const showRedirectMessage = user && isDrupalReferrer;
 
