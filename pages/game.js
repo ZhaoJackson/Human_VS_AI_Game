@@ -431,21 +431,26 @@ export default function Game() {
       console.log('🟢 [AUTO-SAVE] Round finished, triggering auto-save...');
       handleSaveRound();
     }
-  }, [finished, roundId, loggingState]);
+  }, [finished, roundId, loggingState, handleSaveRound]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (!gameStarted || finished) return;
 
       if (gameMode === 'swipe') {
-        if (e.key === 'ArrowRight') handleSwipe('right');
-        else if (e.key === 'ArrowLeft') handleSwipe('left');
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handleSwipe('left');
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleSwipe('right');
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameStarted, finished, currentItem, responseToShow, gameMode]);
+  }, [gameStarted, finished, gameMode, handleSwipe]);
 
   if (!gameStarted) {
     return (
