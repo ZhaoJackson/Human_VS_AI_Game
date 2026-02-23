@@ -3,13 +3,26 @@ import { appendRound, checkExistingRound } from '../../src/lib/google/sheets';
 import Joi from 'joi';
 
 // Validation schema
+const questionSchema = Joi.object({
+    questionNumber: Joi.number().integer().min(1).required(),
+    prompt: Joi.string().required(),
+    userChoice: Joi.string().required(),
+    correct: Joi.boolean().required(),
+    correctAnswer: Joi.string().required(),
+    humanResponse: Joi.string().required(),
+    aiResponse: Joi.string().required(),
+    aiSource: Joi.string().allow('').optional(),
+    timeTaken: Joi.number().allow(null).optional(),
+});
+
 const roundSchema = Joi.object({
     roundId: Joi.string().guid({ version: 'uuidv4' }).required(),
     category: Joi.string().required(),
-    numQuestions: Joi.number().integer().min(1).required(),
     score: Joi.number().integer().min(0).required(),
     accuracyPct: Joi.number().min(0).max(100).required(),
     avgTimeSeconds: Joi.number().min(0).required(),
+    questionHistory: Joi.array().items(questionSchema).min(1).required(),
+    aiSourceCombined: Joi.string().allow('').optional(),
     user: Joi.object().optional().unknown(true)
 });
 
@@ -46,7 +59,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: `Invalid request: ${error.details[0].message}` });
         }
 
-        const { roundId, category, numQuestions, score, accuracyPct, avgTimeSeconds } = value;
+        const { roundId, category, score, accuracyPct, avgTimeSeconds, questionHistory, aiSourceCombined } = value;
 
         console.log(`🔵 [SUBMIT-DATA] Checking for duplicate round: ${roundId}`);
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -62,10 +75,11 @@ export default async function handler(req, res) {
         const payload = {
             roundId,
             category,
-            numQuestions,
             score,
             accuracyPct,
             avgTimeSeconds,
+            questionHistory,
+            aiSourceCombined: aiSourceCombined || '',
             session: user
         };
 

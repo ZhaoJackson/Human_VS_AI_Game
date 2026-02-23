@@ -16,7 +16,7 @@ export default function Game() {
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
-  const [activeGameMode, setActiveGameMode] = useState('swipe');
+  const [activeGameMode, setActiveGameMode] = useState('click');
   const [shuffledData, setShuffledData] = useState([]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -186,7 +186,7 @@ export default function Game() {
 
     const incomingMode = Array.isArray(router.query.mode)
       ? router.query.mode[0]
-      : router.query.mode || 'swipe';
+      : router.query.mode || 'click';
 
     if (incomingTheme !== selectedTheme) {
       setSelectedTheme(incomingTheme);
@@ -258,6 +258,7 @@ export default function Game() {
       correctAnswer: isHuman ? 'Human' : 'AI',
       humanResponse: currentItem.human,
       aiResponse: currentItem.ai,
+      aiSource: currentItem.aiSource || '',
       timeTaken
     }]);
 
@@ -289,6 +290,7 @@ export default function Game() {
       correctAnswer: isHuman ? 'Human' : 'AI',
       humanResponse: currentItem.human,
       aiResponse: currentItem.ai,
+      aiSource: currentItem.aiSource || '',
       timeTaken
     }]);
 
@@ -361,16 +363,18 @@ export default function Game() {
     const accuracyForApi = Number((totalQuestions ? (score / totalQuestions) * 100 : 0).toFixed(2));
     const avgTimeForApi = Number(averageTimeSeconds.toFixed(2));
     const category = selectedTheme || 'Mixed prompts';
+    const aiSourceCombined = [...new Set(questionHistory.map(q => q.aiSource).filter(Boolean))].join(', ');
 
     console.log('🟢 [FRONTEND] Starting to log round results...');
     console.log('🟢 [FRONTEND] Round ID:', roundId);
     console.log('🟢 [FRONTEND] Payload:', {
       roundId,
       category,
-      numQuestions: totalQuestions,
       score,
       accuracyPct: accuracyForApi,
       avgTimeSeconds: avgTimeForApi,
+      questionHistory,
+      aiSourceCombined,
     });
 
     setLoggingState('pending');
@@ -390,10 +394,11 @@ export default function Game() {
         body: JSON.stringify({
           roundId,
           category,
-          numQuestions: totalQuestions,
           score,
           accuracyPct: accuracyForApi,
           avgTimeSeconds: avgTimeForApi,
+          questionHistory,
+          aiSourceCombined,
           user,
         }),
         signal: controller.signal,
@@ -647,6 +652,7 @@ export default function Game() {
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>Prompt</th>
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>Human response</th>
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>AI response</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left' }}>AI Source</th>
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>You chose</th>
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>Result</th>
                     </tr>
@@ -670,6 +676,19 @@ export default function Game() {
                         <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.prompt}</td>
                         <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.humanResponse}</td>
                         <td style={{ padding: '14px 16px', maxWidth: 280 }}>{question.aiResponse}</td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            background: darkMode ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.12)',
+                            color: darkMode ? '#c7d2fe' : '#4f46e5',
+                          }}>
+                            {question.aiSource || '—'}
+                          </span>
+                        </td>
                         <td style={{ padding: '14px 16px' }}>{question.userChoice}</td>
                         <td style={{ padding: '14px 16px' }}>
                           <span

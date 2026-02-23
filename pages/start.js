@@ -15,7 +15,7 @@ const getUniqueConditions = () => {
 export default function Start() {
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
-  const [selectedMode, setSelectedMode] = useState('swipe');
+  const [selectedMode, setSelectedMode] = useState('click');
   const [showSettings, setShowSettings] = useState(false);
   const conditions = useMemo(getUniqueConditions, []);
   const { user, error, isLoading } = useUser();
@@ -363,6 +363,50 @@ export default function Start() {
               Select Game Mode
             </h2>
             <div style={{ display: 'grid', gap: 16 }}>
+              {/* Click Mode - default */}
+              <div
+                onClick={() => setSelectedMode('click')}
+                style={{
+                  padding: 20,
+                  borderRadius: 16,
+                  border: selectedMode === 'click'
+                    ? '2px solid #8B7355'
+                    : '2px solid rgba(139,115,85,0.3)',
+                  background: selectedMode === 'click'
+                    ? 'rgba(139,115,85,0.1)'
+                    : 'rgba(255,255,255,0.5)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <input
+                    type="radio"
+                    name="gameMode"
+                    checked={selectedMode === 'click'}
+                    onChange={() => setSelectedMode('click')}
+                    style={{ width: 20, height: 20, cursor: 'pointer' }}
+                  />
+                  <h3 style={{
+                    fontSize: '1.3rem',
+                    fontWeight: 600,
+                    margin: 0,
+                    fontFamily: '"Times New Roman", Times, serif'
+                  }}>
+                    Click Mode
+                  </h3>
+                </div>
+                <p style={{
+                  margin: '8px 0 0 32px',
+                  fontSize: '1rem',
+                  lineHeight: 1.6,
+                  color: '#3E2723',
+                  fontFamily: '"Times New Roman", Times, serif'
+                }}>
+                  See both responses side by side. Click on the response you think is human. Compare and analyze before making your choice.
+                </p>
+              </div>
+
               {/* Swipe Mode */}
               <div
                 onClick={() => setSelectedMode('swipe')}
@@ -404,50 +448,6 @@ export default function Start() {
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
                   See one response at a time. Swipe left for AI. Swipe right for Human. You can also use keyboard arrow keys <code>←</code> | <code>→</code>
-                </p>
-              </div>
-
-              {/* Click Mode */}
-              <div
-                onClick={() => setSelectedMode('click')}
-                style={{
-                  padding: 20,
-                  borderRadius: 16,
-                  border: selectedMode === 'click'
-                    ? '2px solid #8B7355'
-                    : '2px solid rgba(139,115,85,0.3)',
-                  background: selectedMode === 'click'
-                    ? 'rgba(139,115,85,0.1)'
-                    : 'rgba(255,255,255,0.5)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                  <input
-                    type="radio"
-                    name="gameMode"
-                    checked={selectedMode === 'click'}
-                    onChange={() => setSelectedMode('click')}
-                    style={{ width: 20, height: 20, cursor: 'pointer' }}
-                  />
-                  <h3 style={{
-                    fontSize: '1.3rem',
-                    fontWeight: 600,
-                    margin: 0,
-                    fontFamily: '"Times New Roman", Times, serif'
-                  }}>
-                    Click Mode
-                  </h3>
-                </div>
-                <p style={{
-                  margin: '8px 0 0 32px',
-                  fontSize: '1rem',
-                  lineHeight: 1.6,
-                  color: '#3E2723',
-                  fontFamily: '"Times New Roman", Times, serif'
-                }}>
-                  See both responses side by side. Click on the response you think is human. Compare and analyze before making your choice.
                 </p>
               </div>
             </div>

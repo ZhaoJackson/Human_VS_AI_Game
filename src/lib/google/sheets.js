@@ -70,19 +70,37 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
     const {
         roundId,
         category,
-        numQuestions,
         score,
         accuracyPct,
         avgTimeSeconds,
+        questionHistory = [],
+        aiSourceCombined = '',
         session,
     } = payload;
 
     const timestamp = new Date().toISOString();
-    const appVersion = process.env.APP_VERSION || '';
     const uni = session.email?.split('@')[0] || '';
     const first = session.given_name || session.name?.split(' ')?.[0] || '';
     const last = session.family_name || session.name?.split(' ')?.slice(1).join(' ') || '';
 
+    // Per-question columns (up to 3 questions)
+    const qCols = [];
+    for (let i = 0; i < 3; i++) {
+        const q = questionHistory[i];
+        qCols.push(
+            q?.prompt        || '',   // Prompt N
+            q?.humanResponse || '',   // Human response N
+            q?.aiResponse    || '',   // AI response N
+            q?.aiSource      || '',   // AI Source N
+            q?.userChoice    || '',   // User chose N
+            q != null ? String(q.correct) : '',  // Result N (true / false)
+        );
+    }
+
+    // Columns:
+    // Timestamp | Round ID | Email | UNI | First Name | Last Name | Category |
+    // [Prompt 1 | Human response 1 | AI response 1 | AI Source 1 | User chose 1 | Result 1] × 3 |
+    // Score | Accuracy Percentage | Average Time (sec) | AI Source
     const row = [
         timestamp,
         roundId,
@@ -91,12 +109,11 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
         first,
         last,
         category,
-        numQuestions,
+        ...qCols,
         score,
         accuracyPct,
         avgTimeSeconds,
-        appVersion,
-        '',
+        aiSourceCombined,
     ];
 
     try {
