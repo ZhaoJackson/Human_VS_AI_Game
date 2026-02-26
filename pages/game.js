@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
+import { pickFromPool, clearPool, buildTripletIds, resolveTriplet } from '../src/lib/sampling';
 import { useGame } from '../src/features/game/contexts/GameContext';
 import { useSession } from '../src/features/game/contexts/SessionContext';
 import GameSettings from '../src/components/game/GameSettings';
@@ -188,23 +189,37 @@ export default function Game() {
       ? router.query.mode[0]
       : router.query.mode || 'click';
 
-    if (incomingTheme !== selectedTheme) {
-      setSelectedTheme(incomingTheme);
-    }
-
+    // Apply state updates synchronously before startGame reads them
+    setSelectedTheme(incomingTheme);
     setActiveGameMode(incomingMode);
-    startGame();
+
+    // Pass incomingTheme directly so startGame never reads stale state
+    startGame(incomingTheme);
   }, [router.isReady]);
 
-  const startGame = () => {
-    const filtered = selectedTheme
-      ? data.filter(item => item.condition?.trim() === selectedTheme)
-      : data;
+  // theme param lets callers bypass stale selectedTheme state
+  const startGame = (theme = selectedTheme) => {
+    // Valid entries for this category
+    const filtered = (theme
+      ? data.filter(item => item.condition?.trim() === theme)
+      : data
+    ).filter(item => item.prompt && item.human1 && item.ai1);
 
-    const selected = [...filtered]
-      .filter(item => item.prompt && item.human && item.ai)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
+    // Build all (entry × human × ai) triplet IDs for this category
+    const allTripletIds = filtered.flatMap(item => buildTripletIds(item));
+
+    // Sampling without replacement at triplet level — picks 3 unique (human,AI) experiences
+    const pickedTriplets = pickFromPool(theme, allTripletIds, 3);
+
+    // Resolve each triplet ID → normalized { ...entry, human, ai, aiSource }
+    const entryMap = Object.fromEntries(filtered.map(item => [item.id, item]));
+    const selected = pickedTriplets.map(tripletId => {
+      const [entryId, expIdxStr] = tripletId.split(':');
+      const entry = entryMap[entryId];
+      if (!entry) return null;
+      const { human, ai, aiSource } = resolveTriplet(entry, Number(expIdxStr));
+      return { ...entry, human, ai, aiSource };
+    }).filter(Boolean);
 
     setShuffledData(selected);
     setIndex(0);
@@ -233,6 +248,7 @@ export default function Game() {
   useEffect(() => {
     if (shuffledData.length > 0 && index < shuffledData.length) {
       const item = shuffledData[index];
+      // human/ai/aiSource are already resolved by startGame via resolveTriplet
       const showHuman = Math.random() > 0.5;
       setCurrentItem(item);
       setResponseToShow(showHuman ? item.human : item.ai);
@@ -331,6 +347,7 @@ export default function Game() {
   };
 
   const handleReturnHome = () => {
+    clearPool(null); // clear ALL category pools — fresh start next session
     clearSession();
     router.push('/start');
   };
