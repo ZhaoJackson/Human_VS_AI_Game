@@ -37,6 +37,7 @@ export default function Game() {
   const [formCompleted, setFormCompleted] = useState(false);
   const [roundIdCopied, setRoundIdCopied] = useState(false);
   const [lastLoggedRoundId, setLastLoggedRoundId] = useState('');
+  const [currentNumPrompts, setCurrentNumPrompts] = useState(3);
   const timerRef = useRef(null);
 
   const generateRoundId = useCallback(() => {
@@ -189,16 +190,17 @@ export default function Game() {
       ? router.query.mode[0]
       : router.query.mode || 'click';
 
-    // Apply state updates synchronously before startGame reads them
+    const incomingPrompts = Math.max(1, Number(
+      Array.isArray(router.query.prompts) ? router.query.prompts[0] : router.query.prompts
+    ) || 3);
+
     setSelectedTheme(incomingTheme);
     setActiveGameMode(incomingMode);
-
-    // Pass incomingTheme directly so startGame never reads stale state
-    startGame(incomingTheme);
+    startGame(incomingTheme, incomingPrompts);
   }, [router.isReady]);
 
-  // theme param lets callers bypass stale selectedTheme state
-  const startGame = (theme = selectedTheme) => {
+  // theme / numPrompts params let callers bypass stale state
+  const startGame = (theme = selectedTheme, numPrompts = 3) => {
     // Valid entries for this category
     const filtered = (theme
       ? data.filter(item => item.condition?.trim() === theme)
@@ -208,8 +210,11 @@ export default function Game() {
     // Build all (entry × human × ai) triplet IDs for this category
     const allTripletIds = filtered.flatMap(item => buildTripletIds(item));
 
-    // Sampling without replacement at triplet level — picks 3 unique (human,AI) experiences
-    const pickedTriplets = pickFromPool(theme, allTripletIds, 3);
+    // Clamp to available triplets so we never exceed what exists
+    const count = Math.min(numPrompts, allTripletIds.length) || 1;
+
+    // Sampling without replacement at triplet level
+    const pickedTriplets = pickFromPool(theme, allTripletIds, count);
 
     // Resolve each triplet ID → normalized { ...entry, human, ai, aiSource }
     const entryMap = Object.fromEntries(filtered.map(item => [item.id, item]));
@@ -225,6 +230,7 @@ export default function Game() {
     setIndex(0);
     setScore(0);
     setHumanCorrect(0);
+    setCurrentNumPrompts(count);
     setFinished(false);
     setCurrentItem(null);
     setResponseToShow(null);
@@ -343,7 +349,7 @@ export default function Game() {
   };
 
   const handlePlayAgain = () => {
-    startGame();
+    startGame(selectedTheme, currentNumPrompts);
   };
 
   const handleReturnHome = () => {
@@ -380,19 +386,10 @@ export default function Game() {
     const accuracyForApi = Number((totalQuestions ? (score / totalQuestions) * 100 : 0).toFixed(2));
     const avgTimeForApi = Number(averageTimeSeconds.toFixed(2));
     const category = selectedTheme || 'Mixed prompts';
-    const aiSourceCombined = [...new Set(questionHistory.map(q => q.aiSource).filter(Boolean))].join(', ');
 
     console.log('🟢 [FRONTEND] Starting to log round results...');
     console.log('🟢 [FRONTEND] Round ID:', roundId);
-    console.log('🟢 [FRONTEND] Payload:', {
-      roundId,
-      category,
-      score,
-      accuracyPct: accuracyForApi,
-      avgTimeSeconds: avgTimeForApi,
-      questionHistory,
-      aiSourceCombined,
-    });
+    console.log('🟢 [FRONTEND] Payload:', { roundId, category, score, accuracyPct: accuracyForApi, avgTimeSeconds: avgTimeForApi, questionHistory });
 
     setLoggingState('pending');
 
@@ -415,7 +412,6 @@ export default function Game() {
           accuracyPct: accuracyForApi,
           avgTimeSeconds: avgTimeForApi,
           questionHistory,
-          aiSourceCombined,
           user,
         }),
         signal: controller.signal,

@@ -74,7 +74,6 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
         accuracyPct,
         avgTimeSeconds,
         questionHistory = [],
-        aiSourceCombined = '',
         session,
     } = payload;
 
@@ -83,24 +82,21 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
     const first = session.given_name || session.name?.split(' ')?.[0] || '';
     const last = session.family_name || session.name?.split(' ')?.slice(1).join(' ') || '';
 
-    // Per-question columns (up to 3 questions)
-    const qCols = [];
-    for (let i = 0; i < 3; i++) {
-        const q = questionHistory[i];
-        qCols.push(
-            q?.prompt        || '',   // Prompt N
-            q?.humanResponse || '',   // Human response N
-            q?.aiResponse    || '',   // AI response N
-            q?.aiSource      || '',   // AI Source N
-            q?.userChoice    || '',   // User chose N
-            q != null ? String(q.correct) : '',  // Result N (true / false)
-        );
-    }
+    // Dynamic per-question columns — one block of 6 per question, for N questions
+    // Columns: Prompt N | Human N | AI N | AI Source N | User Choice N | Result N
+    const qCols = questionHistory.flatMap(q => [
+        q.prompt        || '',
+        q.humanResponse || '',
+        q.aiResponse    || '',
+        q.aiSource      || '',
+        q.userChoice    || '',
+        String(q.correct),
+    ]);
 
-    // Columns:
+    // Final column order:
     // Timestamp | Round ID | Email | UNI | First Name | Last Name | Category |
-    // [Prompt 1 | Human response 1 | AI response 1 | AI Source 1 | User chose 1 | Result 1] × 3 |
-    // Score | Accuracy Percentage | Average Time (sec) | AI Source
+    // Score | Accuracy Percentage | Average Time (sec) |
+    // [Prompt N | Human N | AI N | AI Source N | User Choice N | Result N] × N
     const row = [
         timestamp,
         roundId,
@@ -109,11 +105,10 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
         first,
         last,
         category,
-        ...qCols,
         score,
         accuracyPct,
         avgTimeSeconds,
-        aiSourceCombined,
+        ...qCols,
     ];
 
     try {

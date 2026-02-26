@@ -22,7 +22,6 @@ const roundSchema = Joi.object({
     accuracyPct: Joi.number().min(0).max(100).required(),
     avgTimeSeconds: Joi.number().min(0).required(),
     questionHistory: Joi.array().items(questionSchema).min(1).required(),
-    aiSourceCombined: Joi.string().allow('').optional(),
     user: Joi.object().optional().unknown(true)
 });
 
@@ -59,7 +58,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: `Invalid request: ${error.details[0].message}` });
         }
 
-        const { roundId, category, score, accuracyPct, avgTimeSeconds, questionHistory, aiSourceCombined } = value;
+        const { roundId, category, score, accuracyPct, avgTimeSeconds, questionHistory } = value;
 
         console.log(`🔵 [SUBMIT-DATA] Checking for duplicate round: ${roundId}`);
         const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -79,7 +78,6 @@ export default async function handler(req, res) {
             accuracyPct,
             avgTimeSeconds,
             questionHistory,
-            aiSourceCombined: aiSourceCombined || '',
             session: user
         };
 

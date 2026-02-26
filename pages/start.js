@@ -2,26 +2,45 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
+import { buildTripletIds } from '../src/lib/sampling';
 import GameSettings from '../src/components/game/GameSettings';
-import { isInIframe, handleIframeAuth } from '../src/utils/iframeDetector';
-
-const getUniqueConditions = () => {
-  const all = data
-    .map((item) => item.condition?.trim() || 'Uncategorized')
-    .sort((a, b) => a.localeCompare(b));
-  return Array.from(new Set(all));
-};
+import { isInIframe } from '../src/utils/iframeDetector';
 
 export default function Start() {
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
+  const [numPrompts, setNumPrompts] = useState(3);
   const [selectedMode, setSelectedMode] = useState('click');
   const [showSettings, setShowSettings] = useState(false);
-  const conditions = useMemo(getUniqueConditions, []);
   const { user, error, isLoading } = useUser();
   const authError = router.query.auth === 'domain';
 
-  const canStart = user && (selectedTheme || true) && selectedMode;
+  // Triplet count per condition (= unique playable experiences)
+  const tripletCountByCondition = useMemo(() => {
+    const counts = {};
+    data.forEach(item => {
+      const cond = item.condition?.trim();
+      if (!cond) return;
+      counts[cond] = (counts[cond] || 0) + buildTripletIds(item).length;
+    });
+    return counts;
+  }, []);
+
+  const conditions = useMemo(
+    () => Object.keys(tripletCountByCondition).sort((a, b) => a.localeCompare(b)),
+    [tripletCountByCondition]
+  );
+
+  // Max prompts for the currently selected category (or total for mixed)
+  const categoryMax = useMemo(() => {
+    if (!selectedTheme) return Object.values(tripletCountByCondition).reduce((a, b) => a + b, 0);
+    return tripletCountByCondition[selectedTheme] || 0;
+  }, [selectedTheme, tripletCountByCondition]);
+
+  const exceedsMax = selectedTheme && numPrompts > categoryMax;
+  const effectivePrompts = exceedsMax ? categoryMax : numPrompts;
+
+  const canStart = user && selectedMode;
 
   const handleStart = () => {
     if (!canStart) return;
@@ -29,6 +48,7 @@ export default function Start() {
     const params = new URLSearchParams();
     if (selectedTheme) params.append('theme', selectedTheme);
     params.append('mode', selectedMode);
+    params.append('prompts', String(effectivePrompts));
 
     router.push(`/game?${params.toString()}`);
   };
@@ -339,10 +359,91 @@ export default function Start() {
               <option value="">Surprise me (all topics)</option>
               {conditions.map((condition) => (
                 <option key={condition} value={condition}>
-                  {condition}
+                  {condition} ({tripletCountByCondition[condition] || 0})
                 </option>
               ))}
             </select>
+          </section>
+
+          {/* Section 3b: Number of Prompts */}
+          <section style={{
+            background: 'rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 20,
+            border: '1px solid rgba(139,115,85,0.3)',
+            padding: 32
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <h2 style={{
+                  fontSize: '1.8rem',
+                  fontWeight: 700,
+                  marginBottom: 8,
+                  color: '#3E2723',
+                  fontFamily: '"Times New Roman", Times, serif'
+                }}>
+                  Number of Prompts
+                </h2>
+                <p style={{
+                  fontSize: '0.95rem',
+                  color: '#5D4037',
+                  marginBottom: 20,
+                  fontFamily: '"Times New Roman", Times, serif'
+                }}>
+                  How many prompts per round? (default: 3)
+                  {selectedTheme && (
+                    <span style={{ display: 'block', marginTop: 4, fontWeight: 600 }}>
+                      {selectedTheme} has {categoryMax} available prompt{categoryMax !== 1 ? 's' : ''}.
+                    </span>
+                  )}
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setNumPrompts(n)}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        border: numPrompts === n
+                          ? '2px solid #8B7355'
+                          : '2px solid rgba(139,115,85,0.3)',
+                        background: numPrompts === n
+                          ? '#8B7355'
+                          : 'rgba(255,255,255,0.7)',
+                        color: numPrompts === n ? '#fff' : '#3E2723',
+                        fontWeight: 700,
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        fontFamily: '"Times New Roman", Times, serif',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Inline warning when selection exceeds category capacity */}
+              {exceedsMax && (
+                <div style={{
+                  flexShrink: 0,
+                  maxWidth: 260,
+                  padding: '14px 16px',
+                  borderRadius: 14,
+                  background: 'rgba(251,191,36,0.15)',
+                  border: '1px solid rgba(217,119,6,0.4)',
+                  color: '#92400e',
+                  fontSize: '0.88rem',
+                  lineHeight: 1.55,
+                  fontFamily: '"Times New Roman", Times, serif'
+                }}>
+                  <strong>Note:</strong> You chose {numPrompts}, but <em>{selectedTheme}</em> only has {categoryMax} prompt{categoryMax !== 1 ? 's' : ''}. The round will play all {categoryMax} available.
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Section 4: Game Mode Selection */}
