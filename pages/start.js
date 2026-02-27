@@ -76,7 +76,6 @@ export default function Start() {
         return; // Exit early to prevent other auth flows
       }
 
-      // Also check for popup/tab authentication
       if (window.opener && sessionStorage.getItem('authInProgress')) {
         sessionStorage.setItem('authCompleted', 'true');
         sessionStorage.removeItem('authInProgress');

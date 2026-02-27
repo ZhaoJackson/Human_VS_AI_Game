@@ -109,6 +109,37 @@ export default function Game() {
     }
   }, [roundId, selectedTheme, user]);
 
+  // Feedback collection form — reuses the existing NEXT_PUBLIC_FEEDBACK_FORM_* env vars
+  // (same form URL, same first/last name entry IDs already configured in .env.local).
+  // Email entry ID goes in NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD once known.
+  const feedbackCollectionUrl = useMemo(() => {
+    const DIRECT_LINK = 'https://forms.gle/vLRUDWqak7AjEgb99';
+    // Reuse the base URL already configured for the same form
+    const baseUrl = process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL;
+    if (!baseUrl || !user) return DIRECT_LINK;
+
+    try {
+      const url = new URL(baseUrl);
+      const email     = user.email || '';
+      const firstName = user.given_name || (user.name ? user.name.split(' ')[0] : '');
+      const lastName  = user.family_name || (user.name ? user.name.split(' ').slice(1).join(' ') : '');
+
+      // Email — dedicated entry ID (add NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD to .env.local)
+      const emailField = process.env.NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD;
+      // First/Last name — reuse IDs already in .env.local
+      const firstField = process.env.NEXT_PUBLIC_FEEDBACK_FORM_FIRST_NAME_FIELD;
+      const lastField  = process.env.NEXT_PUBLIC_FEEDBACK_FORM_LAST_NAME_FIELD;
+
+      if (emailField && email)     url.searchParams.set(emailField, email);
+      if (firstField && firstName) url.searchParams.set(firstField, firstName);
+      if (lastField  && lastName)  url.searchParams.set(lastField,  lastName);
+
+      return url.toString();
+    } catch {
+      return DIRECT_LINK;
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!router.isReady) return;
     const incomingTheme = Array.isArray(router.query.theme)
@@ -775,6 +806,54 @@ export default function Game() {
                   Selection Category
                 </button>
               </div>
+            </section>
+
+            {/* FEEDBACK PANEL — optional */}
+            <section
+              style={{
+                borderRadius: 24,
+                padding: '28px 32px',
+                background: darkMode ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.55)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: darkMode ? '0 20px 40px rgba(15,23,42,0.35)' : '0 20px 40px rgba(15,23,42,0.08)',
+                border: darkMode ? '1px dashed rgba(148,163,184,0.25)' : '1px dashed rgba(139,115,85,0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 20,
+              }}
+            >
+              <div>
+                <h2 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: 700, color: darkMode ? '#e2e8f0' : '#3E2723' }}>
+                  Share Your Feedback
+                </h2>
+                <p style={{ margin: 0, fontSize: '0.92rem', color: darkMode ? '#94a3b8' : '#5D4037', lineHeight: 1.55 }}>
+                  Optional — help us improve the experience. Takes about 2 minutes.
+                </p>
+              </div>
+              <a
+                href={feedbackCollectionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 28px',
+                  borderRadius: 999,
+                  background: 'linear-gradient(135deg, #8B7355, #6D5843)',
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  boxShadow: '0 4px 14px rgba(139,115,85,0.35)',
+                  whiteSpace: 'nowrap',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(139,115,85,0.45)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(139,115,85,0.35)'; }}
+              >
+                Feedback Form
+              </a>
             </section>
           </div>
         </div>
