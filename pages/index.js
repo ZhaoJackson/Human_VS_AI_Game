@@ -82,8 +82,8 @@ export default function Home() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
-      color: '#3E2723',
+      background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
+      color: '#1A2E4A',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
       {/* Header */}
@@ -92,25 +92,24 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(139,115,85,0.25)',
-        backdropFilter: 'blur(10px)'
+        background: '#1A2E4A',
       }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>
           Turing Test by Social Intervention Group
         </div>
         {!isLoading && (
           user ? (
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>{user.email}</span>
+              <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>{user.email}</span>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a href="/api/auth/logout" style={{
                 padding: '10px 20px',
                 borderRadius: 999,
-                background: 'rgba(139,115,85,0.3)',
-                color: '#3E2723',
+                background: 'transparent',
+                color: '#fff',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
-                border: '1px solid rgba(139,115,85,0.4)'
+                border: '1px solid rgba(255,255,255,0.4)'
               }}>
                 Log out
               </a>
@@ -123,7 +122,7 @@ export default function Home() {
               style={{
                 padding: '10px 24px',
                 borderRadius: 999,
-                background: '#8B7355',
+                background: '#C4957A',
                 color: '#fff',
                 textDecoration: 'none',
                 fontSize: '0.95rem',
@@ -187,7 +186,7 @@ export default function Home() {
             textShadow: '0 2px 20px rgba(0,0,0,0.5)',
             fontFamily: '"Times New Roman", Times, serif'
           }}>
-            Turing test under mental health context
+            Turing Test of experiences living with mental health conditions
           </p>
 
           <button
@@ -197,8 +196,8 @@ export default function Home() {
               fontSize: '1.4rem',
               borderRadius: 999,
               border: 'none',
-              background: '#fff',
-              color: '#3E2723',
+              background: '#C4957A',
+              color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
@@ -224,8 +223,8 @@ export default function Home() {
         background: 'rgba(255,255,255,0.7)',
         backdropFilter: 'blur(20px)',
         padding: '60px 20px',
-        borderTop: '1px solid rgba(139,115,85,0.3)',
-        borderBottom: '1px solid rgba(139,115,85,0.3)'
+        borderTop: '1px solid rgba(117,170,219,0.4)',
+        borderBottom: '1px solid rgba(117,170,219,0.4)'
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{
@@ -240,30 +239,30 @@ export default function Home() {
           <p style={{
             fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
             lineHeight: 1.8,
-            color: '#3E2723',
+            color: '#1A2E4A',
             marginBottom: 20,
             fontFamily: '"Times New Roman", Times, serif'
           }}>
-            You will see two responses to mental health-related questions.
+            You&apos;ll see two descriptions of what it&apos;s like to live with a mental health condition. One is from a real person. One is AI-generated.
           </p>
 
           <p style={{
             fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
             lineHeight: 1.8,
-            color: '#3E2723',
+            color: '#1A2E4A',
             marginBottom: 20,
             fontFamily: '"Times New Roman", Times, serif'
           }}>
-            Your task is to determine which response is from a <strong>human</strong> and which one is from <strong>AI</strong>.
+            <strong>Your job?</strong> Figure out which is which.
           </p>
 
           <p style={{
             fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
             lineHeight: 1.8,
-            color: '#3E2723',
+            color: '#1A2E4A',
             fontFamily: '"Times New Roman", Times, serif'
           }}>
-            The true source of each response is revealed at the end of each round.
+            We&apos;ll show you the answers after a round of 3 prompts.
           </p>
         </div>
       </section>
@@ -310,28 +309,28 @@ export default function Home() {
         background: 'rgba(255,255,255,0.7)',
         backdropFilter: 'blur(20px)',
         padding: '60px 20px',
-        borderTop: '1px solid rgba(139,115,85,0.3)',
-        borderBottom: '1px solid rgba(139,115,85,0.3)'
+        borderTop: '1px solid rgba(117,170,219,0.4)',
+        borderBottom: '1px solid rgba(117,170,219,0.4)'
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          {/* Test Your AI Detection Skills */}
+          {/* Why Play? */}
           <div style={{ marginBottom: 50 }}>
             <h3 style={{
               fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
               fontWeight: 700,
               marginBottom: 20,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
-              Test Your AI Detection Skills
+              Why Play?
             </h3>
             <p style={{
               fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
               lineHeight: 1.8,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
-              Challenge yourself to distinguish between human-written responses and AI-generated content in the context of mental health discussions. Sharpen your ability to detect AI in sensitive conversations.
+              As AI gets better at mimicking human writing, spotting the difference is becoming a valuable skill, especially in sensitive topics like mental health. What feels human to you?
             </p>
           </div>
 
@@ -341,7 +340,7 @@ export default function Home() {
               fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
               fontWeight: 700,
               marginBottom: 20,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
               How It Works
@@ -349,12 +348,35 @@ export default function Home() {
             <p style={{
               fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
               lineHeight: 1.8,
-              color: '#3E2723',
+              color: '#1A2E4A',
+              marginBottom: 20,
               fontFamily: '"Times New Roman", Times, serif'
             }}>
-              Each round presents 3 questions with real responses from Columbia students and AI-generated alternatives. Use your intuition and analytical skills to identify authentic human experiences in mental health contexts.
+              Each round gives you 3 prompts with real responses from Columbia University students mixed with AI-generated ones.
+            </p>
+            <p style={{
+              fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
+              lineHeight: 1.8,
+              color: '#1A2E4A',
+              fontFamily: '"Times New Roman", Times, serif'
+            }}>
+              Use your intuition. Look for the little things that make each response feel human (or not). Then make your choice.
             </p>
           </div>
+
+          {/* Ready CTA */}
+          <p style={{
+            fontSize: 'clamp(1.2rem, 2vw, 1.5rem)',
+            lineHeight: 1.8,
+            color: '#1A2E4A',
+            fontWeight: 700,
+            marginTop: 50,
+            marginBottom: 0,
+            fontFamily: '"Times New Roman", Times, serif',
+            textAlign: 'center'
+          }}>
+            Ready to test your skills?
+          </p>
 
           {/* Attribution */}
           <div style={{
@@ -363,7 +385,7 @@ export default function Home() {
             borderRadius: 16,
             background: 'rgba(255,255,255,0.85)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             textAlign: 'center'
           }}>
             <p style={{
@@ -382,10 +404,10 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={{
-        background: 'rgba(139,115,85,0.4)',
+        background: 'rgba(26,46,74,0.15)',
         backdropFilter: 'blur(10px)',
         padding: '30px 40px',
-        borderTop: '1px solid rgba(139,115,85,0.4)',
+        borderTop: '1px solid rgba(26,46,74,0.2)',
         textAlign: 'center'
       }}>
         <div style={{
@@ -402,35 +424,35 @@ export default function Home() {
           <span>© 2025 Zichen Zhao</span>
           <span style={{ opacity: 0.5 }}>•</span>
           <Link href="/contact" style={{
-            color: '#3E2723',
+            color: '#75AADB',
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            borderBottom: '1px solid rgba(117,170,219,0.4)',
             transition: 'border-color 0.2s'
           }}
-            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
-            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#75AADB'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(117,170,219,0.4)'}>
             Contact
           </Link>
           <span style={{ opacity: 0.5 }}>•</span>
           <Link href="/privacy" style={{
-            color: '#3E2723',
+            color: '#75AADB',
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            borderBottom: '1px solid rgba(117,170,219,0.4)',
             transition: 'border-color 0.2s'
           }}
-            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
-            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#75AADB'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(117,170,219,0.4)'}>
             Privacy
           </Link>
           <span style={{ opacity: 0.5 }}>•</span>
           <Link href="/about" style={{
-            color: '#3E2723',
+            color: '#75AADB',
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(62,39,35,0.3)',
+            borderBottom: '1px solid rgba(117,170,219,0.4)',
             transition: 'border-color 0.2s'
           }}
-            onMouseOver={(e) => e.currentTarget.style.borderColor = '#3E2723'}
-            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(62,39,35,0.3)'}>
+            onMouseOver={(e) => e.currentTarget.style.borderColor = '#75AADB'}
+            onMouseOut={(e) => e.currentTarget.style.borderColor = 'rgba(117,170,219,0.4)'}>
             About
           </Link>
         </div>

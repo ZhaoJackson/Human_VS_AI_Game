@@ -4,8 +4,8 @@ export default function Contact() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
-            color: '#3E2723',
+            background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
+            color: '#1A2E4A',
             fontFamily: '"Times New Roman", Times, serif'
         }}>
             {/* Header */}
@@ -14,20 +14,19 @@ export default function Contact() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                background: 'rgba(139,115,85,0.25)',
-                backdropFilter: 'blur(10px)'
+                background: '#1A2E4A',
             }}>
                 <div style={{
                     fontSize: '1.5rem',
                     fontWeight: 700,
-                    color: '#3E2723'
+                    color: '#fff'
                 }}>
                     Turing Test by Social Intervention Group
                 </div>
                 <Link href="/" style={{
                     padding: '10px 24px',
                     borderRadius: 999,
-                    background: '#8B7355',
+                    background: '#C4957A',
                     color: '#fff',
                     textDecoration: 'none',
                     fontSize: '0.95rem',
@@ -47,15 +46,15 @@ export default function Contact() {
                     background: 'rgba(255,255,255,0.7)',
                     backdropFilter: 'blur(20px)',
                     borderRadius: 20,
-                    border: '1px solid rgba(139,115,85,0.3)',
+                    border: '1px solid rgba(117,170,219,0.4)',
                     padding: 48
                 }}>
                     <h1 style={{
                         fontSize: '2.5rem',
                         fontWeight: 700,
                         marginBottom: 40,
-                        color: '#3E2723'
-                    }}>
+                        color: '#1A2E4A'
+                        }}>
                         Contact Us
                     </h1>
 
@@ -65,9 +64,9 @@ export default function Contact() {
                             fontSize: '1.8rem',
                             fontWeight: 600,
                             marginBottom: 24,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
-                            Research Team
+                        Research Team
                         </h2>
 
                         {/* Principal Investigator */}
@@ -76,13 +75,13 @@ export default function Contact() {
                             borderRadius: 16,
                             padding: 24,
                             marginBottom: 20,
-                            border: '1px solid rgba(139,115,85,0.2)'
+                            border: '1px solid rgba(117,170,219,0.3)'
                         }}>
                             <h3 style={{
                                 fontSize: '1.3rem',
                                 fontWeight: 600,
                                 marginBottom: 8,
-                                color: '#3E2723'
+                                color: '#1A2E4A'
                             }}>
                                 Principal Investigator
                             </h3>
@@ -100,9 +99,9 @@ export default function Contact() {
                                 margin: '12px 0'
                             }}>
                                 <a href="mailto:elwin.wu@columbia.edu" style={{
-                                    color: '#8B7355',
+                                    color: '#75AADB',
                                     textDecoration: 'none',
-                                    borderBottom: '1px solid rgba(139,115,85,0.4)',
+                                    borderBottom: '1px solid rgba(117,170,219,0.5)',
                                     transition: 'border-color 0.2s'
                                 }}>
                                     elwin.wu@columbia.edu
@@ -115,13 +114,13 @@ export default function Contact() {
                             background: 'rgba(255,255,255,0.6)',
                             borderRadius: 16,
                             padding: 24,
-                            border: '1px solid rgba(139,115,85,0.2)'
+                            border: '1px solid rgba(117,170,219,0.3)'
                         }}>
                             <h3 style={{
                                 fontSize: '1.3rem',
                                 fontWeight: 600,
                                 marginBottom: 8,
-                                color: '#3E2723'
+                                color: '#1A2E4A'
                             }}>
                                 Web Developer & Researcher
                             </h3>
@@ -138,9 +137,9 @@ export default function Contact() {
                                 margin: '12px 0'
                             }}>
                                 <a href="mailto:zichen.zhao@columbia.edu" style={{
-                                    color: '#8B7355',
+                                    color: '#75AADB',
                                     textDecoration: 'none',
-                                    borderBottom: '1px solid rgba(139,115,85,0.4)',
+                                    borderBottom: '1px solid rgba(117,170,219,0.5)',
                                     transition: 'border-color 0.2s'
                                 }}>
                                     zichen.zhao@columbia.edu
@@ -155,14 +154,14 @@ export default function Contact() {
                             fontSize: '1.8rem',
                             fontWeight: 600,
                             marginBottom: 16,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
-                            General Inquiries
+                        General Inquiries
                         </h2>
                         <p style={{
                             fontSize: '1.1rem',
                             lineHeight: 1.8,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
                             For questions about the research, technical issues, or general inquiries,
                             please contact either team member via email. We aim to respond within 2-3 business days.

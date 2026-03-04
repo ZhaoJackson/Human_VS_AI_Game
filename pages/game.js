@@ -8,8 +8,6 @@ import { pickFromPool, clearPool, buildTripletIds, resolveTriplet } from '../src
 import { useGame } from '../src/features/game/contexts/GameContext';
 import { useSession } from '../src/features/game/contexts/SessionContext';
 import GameSettings from '../src/components/game/GameSettings';
-import { SessionStats } from '../src/components/game/SessionStats';
-
 export default function Game() {
   const { darkMode, timeLimit, fontSize } = useGame();
   const { user } = useUser();
@@ -68,8 +66,8 @@ export default function Game() {
   }, [questionHistory]);
 
   const accuracyPercent = useMemo(() => {
-    if (!totalQuestions) return 0;
-    return Math.round((score / totalQuestions) * 100);
+    if (!totalQuestions) return '0.0';
+    return ((score / totalQuestions) * 100).toFixed(1);
   }, [score, totalQuestions]);
 
   const feedbackFormUrl = useMemo(() => {
@@ -226,7 +224,8 @@ export default function Game() {
     ) || 3);
 
     setSelectedTheme(incomingTheme);
-    setActiveGameMode(incomingMode);
+    // Swipe mode is deactivated — always use click regardless of URL param
+    setActiveGameMode('click');
     startGame(incomingTheme, incomingPrompts);
   }, [router.isReady]);
 
@@ -379,10 +378,6 @@ export default function Game() {
     }
   };
 
-  const handlePlayAgain = () => {
-    startGame(selectedTheme, currentNumPrompts);
-  };
-
   const handleReturnHome = () => {
     clearPool(null); // clear ALL category pools — fresh start next session
     clearSession();
@@ -527,14 +522,13 @@ export default function Game() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      background: 'rgba(139,115,85,0.25)',
-      backdropFilter: 'blur(10px)'
+      background: '#1A2E4A',
     }}>
       <div style={{
         fontSize: '1.5rem',
         fontWeight: 700,
         fontFamily: '"Times New Roman", Times, serif',
-        color: darkMode ? '#fff' : '#3E2723'
+        color: '#fff'
       }}>
         Turing Test by Social Intervention Group
       </div>
@@ -544,7 +538,7 @@ export default function Game() {
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#8B7355',
+            background: '#C4957A',
             color: '#fff',
             border: 'none',
             cursor: 'pointer',
@@ -561,7 +555,7 @@ export default function Game() {
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#8B7355',
+            background: '#C4957A',
             color: '#fff',
             border: 'none',
             cursor: 'pointer',
@@ -587,14 +581,14 @@ export default function Game() {
           position: 'relative',
           minHeight: '100vh',
           width: '100%',
-          background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
-          color: darkMode ? '#e2e8f0' : '#0f172a',
-        }}
-      >
-        {renderHeader()}
-        {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
+        background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
+        color: darkMode ? '#e2e8f0' : '#1A2E4A',
+      }}
+    >
+      {renderHeader()}
+      {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
 
-        <div style={{ padding: '40px 20px 80px' }}>
+      <div style={{ padding: '40px 20px 80px' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 32 }}>
             {/* TOP PANEL: Score and Stats */}
             <section
@@ -604,14 +598,14 @@ export default function Game() {
                 background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(20px)',
                 boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(117,170,219,0.4)',
                 display: 'grid',
                 gap: 28,
               }}
             >
               <div>
                 <h1 style={{ fontSize: '2.25rem', marginBottom: 12 }}>Round complete</h1>
-                <p style={{ margin: 0, color: darkMode ? '#c7d2fe' : '#475467' }}>
+                <p style={{ margin: 0, color: darkMode ? '#e2e8f0' : '#1A2E4A' }}>
                   Theme: {themeLabel} · Accuracy {accuracyPercent}% · {humanCorrect} human answers spotted
                 </p>
               </div>
@@ -627,7 +621,7 @@ export default function Game() {
                   style={{
                     padding: '18px 20px',
                     borderRadius: 18,
-                    background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
+                    background: darkMode ? 'rgba(117,170,219,0.2)' : 'rgba(117,170,219,0.12)',
                   }}
                 >
                   <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>Score</p>
@@ -638,7 +632,7 @@ export default function Game() {
                   style={{
                     padding: '18px 20px',
                     borderRadius: 18,
-                    background: darkMode ? 'rgba(22,163,74,0.2)' : 'rgba(34,197,94,0.12)',
+                    background: darkMode ? 'rgba(168,191,168,0.25)' : 'rgba(168,191,168,0.2)',
                   }}
                 >
                   <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
@@ -650,7 +644,7 @@ export default function Game() {
                   style={{
                     padding: '18px 20px',
                     borderRadius: 18,
-                    background: darkMode ? 'rgba(244,114,182,0.18)' : 'rgba(236,72,153,0.12)',
+                    background: darkMode ? 'rgba(196,149,122,0.2)' : 'rgba(196,149,122,0.15)',
                   }}
                 >
                   <p style={{ margin: 0, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2 }}>
@@ -661,16 +655,13 @@ export default function Game() {
               </div>
             </section>
 
-            {/* Session Stats - Shows cumulative results */}
-            <SessionStats sessionStats={sessionStats} darkMode={darkMode} />
-
             {/* MIDDLE PANEL: Round Breakdown */}
             <section
               style={{
                 borderRadius: 20,
                 background: darkMode ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(20px)',
-                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(117,170,219,0.4)',
                 boxShadow: darkMode ? '0 25px 50px rgba(15,23,42,0.45)' : '0 25px 50px rgba(15,23,42,0.12)',
                 overflow: 'hidden',
               }}
@@ -678,7 +669,7 @@ export default function Game() {
               <div
                 style={{
                   padding: '20px 24px',
-                  borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                  borderBottom: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid rgba(117,170,219,0.3)',
                 }}
               >
                 <h2 style={{ margin: 0 }}>Round breakdown</h2>
@@ -688,8 +679,8 @@ export default function Game() {
                   <thead>
                     <tr
                       style={{
-                        background: darkMode ? 'rgba(30,41,59,0.95)' : '#f8fafc',
-                        color: darkMode ? '#cbd5f5' : '#475467',
+                        background: darkMode ? 'rgba(26,46,74,0.9)' : '#F7F4EF',
+                        color: darkMode ? '#e2e8f0' : '#1A2E4A',
                       }}
                     >
                       <th style={{ padding: '14px 16px', textAlign: 'left' }}>#</th>
@@ -706,14 +697,14 @@ export default function Game() {
                       <tr
                         key={idx}
                         style={{
-                          borderBottom: darkMode ? '1px solid rgba(148,163,184,0.15)' : '1px solid #e2e8f0',
+                          borderBottom: darkMode ? '1px solid rgba(148,163,184,0.15)' : '1px solid rgba(117,170,219,0.2)',
                           background: question.correct
                             ? darkMode
-                              ? 'rgba(22,163,74,0.1)'
-                              : 'rgba(187,247,208,0.35)'
+                              ? 'rgba(168,191,168,0.15)'
+                              : 'rgba(168,191,168,0.2)'
                             : darkMode
-                              ? 'rgba(239,68,68,0.12)'
-                              : 'rgba(254,226,226,0.6)',
+                              ? 'rgba(196,149,122,0.15)'
+                              : 'rgba(196,149,122,0.1)',
                         }}
                       >
                         <td style={{ padding: '14px 16px', fontWeight: 600 }}>{question.questionNumber}</td>
@@ -727,8 +718,8 @@ export default function Game() {
                             borderRadius: 999,
                             fontSize: '0.85rem',
                             fontWeight: 600,
-                            background: darkMode ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.12)',
-                            color: darkMode ? '#c7d2fe' : '#4f46e5',
+                            background: darkMode ? 'rgba(117,170,219,0.2)' : 'rgba(117,170,219,0.15)',
+                            color: darkMode ? '#75AADB' : '#1A2E4A',
                           }}>
                             {question.aiSource || '—'}
                           </span>
@@ -745,16 +736,15 @@ export default function Game() {
                               fontWeight: 600,
                               background: question.correct
                                 ? darkMode
-                                  ? 'rgba(34,197,94,0.25)'
-                                  : 'rgba(34,197,94,0.18)'
+                                  ? 'rgba(168,191,168,0.3)'
+                                  : 'rgba(168,191,168,0.25)'
                                 : darkMode
-                                  ? 'rgba(248,113,113,0.25)'
-                                  : 'rgba(248,113,113,0.18)',
-                              color: question.correct ? '#15803d' : '#b91c1c',
+                                  ? 'rgba(196,149,122,0.3)'
+                                  : 'rgba(196,149,122,0.2)',
+                              color: question.correct ? '#1A2E4A' : '#C4957A',
                             }}
                           >
                             {question.correct ? '✅ Correct' : '❌ Incorrect'}
-                            <span style={{ fontSize: 12, opacity: 0.8 }}>Truth: {question.correctAnswer}</span>
                           </span>
                         </td>
                       </tr>
@@ -772,38 +762,24 @@ export default function Game() {
                 background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(20px)',
                 boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(117,170,219,0.4)',
               }}
             >
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                <button
-                  onClick={handlePlayAgain}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: 999,
-                    border: 'none',
-                    backgroundColor: '#2563eb',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  Another Round
-                </button>
                 <button
                   onClick={handleReturnHome}
                   style={{
                     padding: '12px 24px',
                     borderRadius: 999,
                     border: 'none',
-                    backgroundColor: darkMode ? 'rgba(148,163,184,0.2)' : '#e2e8f0',
-                    color: darkMode ? '#e2e8f0' : '#475467',
+                    backgroundColor: '#C4957A',
+                    color: '#fff',
                     cursor: 'pointer',
-                    fontWeight: 500,
+                    fontWeight: 600,
                   }}
                 >
-                  Selection Category
+                  Play Again
                 </button>
               </div>
             </section>
@@ -816,7 +792,7 @@ export default function Game() {
                 background: darkMode ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.55)',
                 backdropFilter: 'blur(20px)',
                 boxShadow: darkMode ? '0 20px 40px rgba(15,23,42,0.35)' : '0 20px 40px rgba(15,23,42,0.08)',
-                border: darkMode ? '1px dashed rgba(148,163,184,0.25)' : '1px dashed rgba(139,115,85,0.35)',
+                border: darkMode ? '1px dashed rgba(148,163,184,0.25)' : '1px dashed rgba(117,170,219,0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -825,10 +801,10 @@ export default function Game() {
               }}
             >
               <div>
-                <h2 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: 700, color: darkMode ? '#e2e8f0' : '#3E2723' }}>
+                <h2 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: 700, color: darkMode ? '#e2e8f0' : '#1A2E4A' }}>
                   Share Your Feedback
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.92rem', color: darkMode ? '#94a3b8' : '#5D4037', lineHeight: 1.55 }}>
+                <p style={{ margin: 0, fontSize: '0.92rem', color: darkMode ? '#94a3b8' : '#1A2E4A', lineHeight: 1.55 }}>
                   Optional — help us improve the experience. Takes about 2 minutes.
                 </p>
               </div>
@@ -840,17 +816,17 @@ export default function Game() {
                   display: 'inline-block',
                   padding: '12px 28px',
                   borderRadius: 999,
-                  background: 'linear-gradient(135deg, #8B7355, #6D5843)',
+                  background: 'linear-gradient(135deg, #C4957A, #A87860)',
                   color: '#fff',
                   textDecoration: 'none',
                   fontWeight: 600,
                   fontSize: '0.95rem',
-                  boxShadow: '0 4px 14px rgba(139,115,85,0.35)',
+                  boxShadow: '0 4px 14px rgba(196,149,122,0.35)',
                   whiteSpace: 'nowrap',
                   transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                 }}
-                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(139,115,85,0.45)'; }}
-                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(139,115,85,0.35)'; }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(196,149,122,0.45)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(196,149,122,0.35)'; }}
               >
                 Feedback Form
               </a>
@@ -867,9 +843,9 @@ export default function Game() {
         position: 'relative',
         minHeight: '100vh',
         padding: '0 20px 80px',
-        color: darkMode ? '#e2e8f0' : '#0f172a',
+        color: darkMode ? '#e2e8f0' : '#1A2E4A',
         width: '100%',
-        background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)'
+        background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)'
       }}
     >
       {renderHeader()}
@@ -891,7 +867,7 @@ export default function Game() {
               <p style={{ fontSize: '1.05rem', marginBottom: 12 }}>
                 <strong>Prompt:</strong> {currentItem.prompt}
               </p>
-              <p style={{ color: darkMode ? '#94a3b8' : '#475467', marginBottom: 16 }}>
+              <p style={{ color: darkMode ? '#e2e8f0' : '#1A2E4A', marginBottom: 16 }}>
                 Question {index + 1} of {shuffledData.length}
               </p>
               {/* Timer removed - no time pressure */}
@@ -916,7 +892,7 @@ export default function Game() {
                 alignItems: 'center',
                 gap: 12,
                 fontSize: '0.95rem',
-                color: darkMode ? '#94a3b8' : '#475467'
+                color: darkMode ? '#e2e8f0' : '#1A2E4A'
               }}
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -927,7 +903,7 @@ export default function Game() {
                 style={{
                   padding: '6px 12px',
                   borderRadius: 999,
-                  background: darkMode ? 'rgba(148,163,184,0.15)' : '#e2e8f0',
+                  background: darkMode ? 'rgba(117,170,219,0.2)' : 'rgba(117,170,219,0.15)',
                   fontWeight: 600
                 }}
               >
@@ -944,12 +920,12 @@ export default function Game() {
                 {responseToShow && (
                   <motion.div
                     key={index}
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    onDragEnd={(e, info) => {
-                      if (info.offset.x > 100) handleSwipe('right');
-                      else if (info.offset.x < -100) handleSwipe('left');
-                    }}
+                    // drag="x"  — swipe gestures disabled; re-enable with drag="x" + dragConstraints + onDragEnd
+                    // dragConstraints={{ left: 0, right: 0 }}
+                    // onDragEnd={(e, info) => {
+                    //   if (info.offset.x > 100) handleSwipe('right');
+                    //   else if (info.offset.x < -100) handleSwipe('left');
+                    // }}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -30 }}
@@ -958,10 +934,10 @@ export default function Game() {
                       maxWidth: 480,
                       padding: '32px 28px',
                       background: darkMode ? 'rgba(15,23,42,0.85)' : '#fff',
-                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      border: darkMode ? '1px solid rgba(117,170,219,0.25)' : '1px solid rgba(117,170,219,0.3)',
                       borderRadius: 28,
                       boxShadow: darkMode ? '0 30px 50px rgba(15,23,42,0.55)' : '0 30px 60px rgba(15,23,42,0.12)',
-                      cursor: 'grab',
+                      cursor: 'default',
                       lineHeight: 1.6
                     }}
                   >
@@ -979,14 +955,14 @@ export default function Game() {
                     <p
                       style={{
                         fontSize: '0.85rem',
-                        color: darkMode ? '#94a3b8' : '#667085',
+                        color: darkMode ? '#e2e8f0' : '#1A2E4A',
                         marginTop: 20,
                         display: 'inline-flex',
                         gap: 8,
                         alignItems: 'center',
                         padding: '6px 12px',
                         borderRadius: 999,
-                        background: darkMode ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)'
+                        background: darkMode ? 'rgba(117,170,219,0.18)' : 'rgba(117,170,219,0.12)'
                       }}
                     >
                       <span>👆</span> Drag the card or press the arrow keys.
@@ -1011,7 +987,7 @@ export default function Game() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 fontSize: '0.95rem',
-                color: darkMode ? '#94a3b8' : '#475467'
+                color: darkMode ? '#e2e8f0' : '#1A2E4A'
               }}
             >
               <span>Tap the response you believe came from a human writer.</span>
@@ -1034,9 +1010,9 @@ export default function Game() {
                     style={{
                       padding: '28px 24px',
                       background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
-                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      border: darkMode ? '1px solid rgba(117,170,219,0.25)' : '1px solid rgba(117,170,219,0.3)',
                       borderRadius: 24,
-                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
+                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.08)',
                       cursor: 'pointer',
                       display: 'grid',
                       gap: 16
@@ -1048,7 +1024,7 @@ export default function Game() {
                         fontSize: '0.85rem',
                         textTransform: 'uppercase',
                         letterSpacing: 1.6,
-                        color: darkMode ? '#c7d2fe' : '#6366f1'
+                        color: darkMode ? '#75AADB' : '#75AADB'
                       }}
                     >
                       Option A
@@ -1065,9 +1041,9 @@ export default function Game() {
                     style={{
                       padding: '28px 24px',
                       background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
-                      border: darkMode ? '1px solid rgba(148,163,184,0.25)' : '1px solid #e2e8f0',
+                      border: darkMode ? '1px solid rgba(117,170,219,0.25)' : '1px solid rgba(117,170,219,0.3)',
                       borderRadius: 24,
-                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.12)',
+                      boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.08)',
                       cursor: 'pointer',
                       display: 'grid',
                       gap: 16
@@ -1079,7 +1055,7 @@ export default function Game() {
                         fontSize: '0.85rem',
                         textTransform: 'uppercase',
                         letterSpacing: 1.6,
-                        color: darkMode ? '#c7d2fe' : '#6366f1'
+                        color: '#75AADB'
                       }}
                     >
                       Option B

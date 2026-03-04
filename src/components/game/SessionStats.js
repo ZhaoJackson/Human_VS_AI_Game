@@ -17,7 +17,7 @@ export function SessionStats({ sessionStats, darkMode = false }) {
                 background: darkMode ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(20px)',
                 boxShadow: darkMode ? '0 30px 60px rgba(15,23,42,0.45)' : '0 30px 60px rgba(15,23,42,0.12)',
-                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(139,115,85,0.3)',
+                border: darkMode ? '1px solid rgba(148,163,184,0.3)' : '1px solid rgba(117,170,219,0.4)',
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>

@@ -4,8 +4,8 @@ export default function Privacy() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)',
-            color: '#3E2723',
+            background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
+            color: '#1A2E4A',
             fontFamily: '"Times New Roman", Times, serif'
         }}>
             {/* Header */}
@@ -14,20 +14,19 @@ export default function Privacy() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                background: 'rgba(139,115,85,0.25)',
-                backdropFilter: 'blur(10px)'
+                background: '#1A2E4A',
             }}>
                 <div style={{
                     fontSize: '1.5rem',
                     fontWeight: 700,
-                    color: '#3E2723'
+                    color: '#fff'
                 }}>
                     Turing Test by Social Intervention Group
                 </div>
                 <Link href="/" style={{
                     padding: '10px 24px',
                     borderRadius: 999,
-                    background: '#8B7355',
+                    background: '#C4957A',
                     color: '#fff',
                     textDecoration: 'none',
                     fontSize: '0.95rem',
@@ -47,14 +46,14 @@ export default function Privacy() {
                     background: 'rgba(255,255,255,0.7)',
                     backdropFilter: 'blur(20px)',
                     borderRadius: 20,
-                    border: '1px solid rgba(139,115,85,0.3)',
+                    border: '1px solid rgba(117,170,219,0.4)',
                     padding: 48
                 }}>
                     <h1 style={{
                         fontSize: '2.5rem',
                         fontWeight: 700,
                         marginBottom: 40,
-                        color: '#3E2723'
+                        color: '#1A2E4A'
                     }}>
                         Privacy & Data Collection
                     </h1>
@@ -65,7 +64,7 @@ export default function Privacy() {
                             fontSize: '1.8rem',
                             fontWeight: 600,
                             marginBottom: 20,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
                             What Data Do We Collect?
                         </h2>
@@ -84,13 +83,13 @@ export default function Privacy() {
                             borderRadius: 16,
                             padding: 24,
                             marginBottom: 20,
-                            border: '1px solid rgba(139,115,85,0.2)'
+                            border: '1px solid rgba(117,170,219,0.3)'
                         }}>
                             <h3 style={{
                                 fontSize: '1.3rem',
                                 fontWeight: 600,
                                 marginBottom: 12,
-                                color: '#3E2723'
+                                color: '#1A2E4A'
                             }}>
                                 Game Session Records
                             </h3>
@@ -119,13 +118,13 @@ export default function Privacy() {
                             borderRadius: 16,
                             padding: 24,
                             marginBottom: 20,
-                            border: '1px solid rgba(139,115,85,0.2)'
+                            border: '1px solid rgba(117,170,219,0.3)'
                         }}>
                             <h3 style={{
                                 fontSize: '1.3rem',
                                 fontWeight: 600,
                                 marginBottom: 12,
-                                color: '#3E2723'
+                                color: '#1A2E4A'
                             }}>
                                 Data Storage
                             </h3>
@@ -146,7 +145,7 @@ export default function Privacy() {
                             fontSize: '1.8rem',
                             fontWeight: 600,
                             marginBottom: 20,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
                             Future Data Collection
                         </h2>
@@ -182,7 +181,7 @@ export default function Privacy() {
                             fontSize: '1.8rem',
                             fontWeight: 600,
                             marginBottom: 20,
-                            color: '#3E2723'
+                            color: '#1A2E4A'
                         }}>
                             Your Rights
                         </h2>
@@ -210,9 +209,9 @@ export default function Privacy() {
                         }}>
                             To exercise any of these rights, please contact us via the{' '}
                             <Link href="/contact" style={{
-                                color: '#8B7355',
+                                color: '#75AADB',
                                 textDecoration: 'none',
-                                borderBottom: '1px solid rgba(139,115,85,0.4)'
+                                borderBottom: '1px solid rgba(117,170,219,0.5)'
                             }}>
                                 Contact page
                             </Link>.

@@ -7,20 +7,20 @@ export function ResponseOption({
 }) {
     const colors = {
         human: {
-            bg: darkMode ? 'rgba(59,130,246,0.15)' : '#dbeafe',
-            bgHover: darkMode ? 'rgba(59,130,246,0.25)' : '#bfdbfe',
-            border: '#3b82f6',
+            bg: darkMode ? 'rgba(117,170,219,0.15)' : 'rgba(117,170,219,0.12)',
+            bgHover: darkMode ? 'rgba(117,170,219,0.28)' : 'rgba(117,170,219,0.22)',
+            border: '#75AADB',
             icon: '👤',
             label: 'HUMAN',
-            accent: '#3b82f6'
+            accent: '#75AADB'
         },
         ai: {
-            bg: darkMode ? 'rgba(168,85,247,0.15)' : '#fae8ff',
-            bgHover: darkMode ? 'rgba(168,85,247,0.25)' : '#f3e8ff',
-            border: '#a855f7',
+            bg: darkMode ? 'rgba(168,191,168,0.15)' : 'rgba(168,191,168,0.18)',
+            bgHover: darkMode ? 'rgba(168,191,168,0.28)' : 'rgba(168,191,168,0.32)',
+            border: '#A8BFA8',
             icon: '🤖',
             label: 'AI',
-            accent: '#a855f7'
+            accent: '#A8BFA8'
         }
     };
 
@@ -80,7 +80,7 @@ export function ResponseOption({
             <div style={{
                 lineHeight: 1.6,
                 fontSize: '1rem',
-                color: darkMode ? '#e2e8f0' : '#1e293b'
+                color: darkMode ? '#e2e8f0' : '#1A2E4A'
             }}>
                 {response}
             </div>

@@ -66,7 +66,7 @@ export default function GameSettings({ onClose }) {
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
-                                    backgroundColor: !tempSettings.darkMode ? '#0070f3' : '#666',
+                                    backgroundColor: !tempSettings.darkMode ? '#75AADB' : '#666',
                                     color: '#fff',
                                     border: 'none',
                                     cursor: 'pointer',
@@ -80,7 +80,7 @@ export default function GameSettings({ onClose }) {
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
-                                    backgroundColor: tempSettings.darkMode ? '#0070f3' : '#666',
+                                    backgroundColor: tempSettings.darkMode ? '#75AADB' : '#666',
                                     color: '#fff',
                                     border: 'none',
                                     cursor: 'pointer',
@@ -132,7 +132,7 @@ export default function GameSettings({ onClose }) {
                             style={{
                                 padding: '8px 16px',
                                 borderRadius: '4px',
-                                backgroundColor: '#0070f3',
+                                backgroundColor: '#C4957A',
                                 color: '#fff',
                                 border: 'none',
                                 cursor: 'pointer',

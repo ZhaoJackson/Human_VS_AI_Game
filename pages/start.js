@@ -111,7 +111,7 @@ export default function Start() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #8B7355 0%, #D2B48C 50%, #F5F5DC 100%)'
+      background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)'
     }}>
       {/* Header */}
       <header style={{
@@ -119,14 +119,13 @@ export default function Start() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(139,115,85,0.25)',
-        backdropFilter: 'blur(10px)'
+        background: '#1A2E4A',
       }}>
         <div style={{
           fontSize: '1.5rem',
           fontWeight: 700,
           fontFamily: '"Times New Roman", Times, serif',
-          color: '#3E2723'
+          color: '#fff'
         }}>
           Turing Test by Social Intervention Group
         </div>
@@ -135,13 +134,13 @@ export default function Start() {
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#8B7355',
+            background: '#C4957A',
             color: '#fff',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.95rem',
             fontWeight: 600,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Times New Roman", Times, serif',
           }}
         >
           Settings
@@ -164,7 +163,7 @@ export default function Start() {
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
             borderRadius: 20,
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             padding: 32,
             textAlign: 'center'
           }}>
@@ -195,7 +194,7 @@ export default function Start() {
             )}
 
             {isLoading ? (
-              <div style={{ fontSize: '1rem', color: '#475467' }}>
+              <div style={{ fontSize: '1rem', color: '#1A2E4A' }}>
                 Checking session...
               </div>
             ) : !user ? (
@@ -204,7 +203,7 @@ export default function Start() {
                   fontSize: '2rem',
                   fontWeight: 700,
                   marginBottom: 12,
-                  color: '#3E2723',
+                  color: '#1A2E4A',
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
                   Sign In Required
@@ -212,7 +211,7 @@ export default function Start() {
                 <p style={{
                   fontSize: '1.1rem',
                   marginBottom: 24,
-                  color: '#3E2723',
+                  color: '#1A2E4A',
                   lineHeight: 1.6,
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
@@ -226,12 +225,12 @@ export default function Start() {
                     display: 'inline-block',
                     padding: '14px 32px',
                     borderRadius: 999,
-                    backgroundColor: '#8B7355',
+                    backgroundColor: '#C4957A',
                     color: '#fff',
                     textDecoration: 'none',
                     fontSize: '1.1rem',
                     fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(139,115,85,0.3)',
+                    boxShadow: '0 4px 12px rgba(196,149,122,0.3)',
                     fontFamily: '"Times New Roman", Times, serif',
                     cursor: 'pointer'
                   }}
@@ -246,16 +245,16 @@ export default function Start() {
                 justifyContent: 'center',
                 gap: 16,
                 padding: '12px 20px',
-                background: 'rgba(34,197,94,0.1)',
+                background: 'rgba(117,170,219,0.1)',
                 borderRadius: 12,
-                border: '1px solid rgba(34,197,94,0.3)'
+                border: '1px solid rgba(117,170,219,0.4)'
               }}>
                 <span style={{ fontSize: '1.5rem' }}>✓</span>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: '0.9rem', color: '#15803d', fontWeight: 600 }}>
+                  <div style={{ fontSize: '0.9rem', color: '#1A2E4A', fontWeight: 600 }}>
                     Signed in
                   </div>
-                  <div style={{ fontSize: '0.9rem', color: '#3E2723' }}>
+                  <div style={{ fontSize: '0.9rem', color: '#1A2E4A' }}>
                     {user.email}
                   </div>
                 </div>
@@ -266,8 +265,8 @@ export default function Start() {
                     marginLeft: 'auto',
                     padding: '6px 14px',
                     borderRadius: 999,
-                    border: '1px solid rgba(139,115,85,0.4)',
-                    color: '#3E2723',
+                    border: '1px solid rgba(117,170,219,0.4)',
+                    color: '#1A2E4A',
                     textDecoration: 'none',
                     fontSize: '0.85rem'
                   }}
@@ -283,14 +282,14 @@ export default function Start() {
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
             borderRadius: 20,
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             padding: 32
           }}>
             <h2 style={{
               fontSize: '1.8rem',
               fontWeight: 700,
               marginBottom: 20,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
               How to Play
@@ -298,7 +297,7 @@ export default function Start() {
             <ol style={{
               fontSize: '1.1rem',
               lineHeight: 1.8,
-              color: '#3E2723',
+              color: '#1A2E4A',
               paddingLeft: 24,
               fontFamily: '"Times New Roman", Times, serif'
             }}>
@@ -319,14 +318,14 @@ export default function Start() {
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
             borderRadius: 20,
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             padding: 32
           }}>
             <h2 style={{
               fontSize: '1.8rem',
               fontWeight: 700,
               marginBottom: 20,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
               Choose a Topic
@@ -335,7 +334,7 @@ export default function Start() {
               display: 'block',
               marginBottom: 12,
               fontSize: '1rem',
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
               Select a mental health topic for this round:
@@ -349,7 +348,7 @@ export default function Start() {
                 padding: '14px 16px',
                 fontSize: '1rem',
                 borderRadius: 12,
-                border: '1px solid rgba(139,115,85,0.4)',
+                border: '1px solid rgba(117,170,219,0.4)',
                 backgroundColor: '#fff',
                 fontFamily: '"Times New Roman", Times, serif',
                 cursor: 'pointer'
@@ -369,7 +368,7 @@ export default function Start() {
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
             borderRadius: 20,
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             padding: 32
           }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
@@ -378,14 +377,14 @@ export default function Start() {
                   fontSize: '1.8rem',
                   fontWeight: 700,
                   marginBottom: 8,
-                  color: '#3E2723',
+                  color: '#1A2E4A',
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
                   Number of Prompts
                 </h2>
                 <p style={{
                   fontSize: '0.95rem',
-                  color: '#5D4037',
+                  color: '#1A2E4A',
                   marginBottom: 20,
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
@@ -406,12 +405,12 @@ export default function Start() {
                         height: 44,
                         borderRadius: 10,
                         border: numPrompts === n
-                          ? '2px solid #8B7355'
-                          : '2px solid rgba(139,115,85,0.3)',
+                          ? '2px solid #C4957A'
+                          : '2px solid rgba(117,170,219,0.4)',
                         background: numPrompts === n
-                          ? '#8B7355'
+                          ? '#C4957A'
                           : 'rgba(255,255,255,0.7)',
-                        color: numPrompts === n ? '#fff' : '#3E2723',
+                        color: numPrompts === n ? '#fff' : '#1A2E4A',
                         fontWeight: 700,
                         fontSize: '1rem',
                         cursor: 'pointer',
@@ -450,14 +449,14 @@ export default function Start() {
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
             borderRadius: 20,
-            border: '1px solid rgba(139,115,85,0.3)',
+            border: '1px solid rgba(117,170,219,0.4)',
             padding: 32
           }}>
             <h2 style={{
               fontSize: '1.8rem',
               fontWeight: 700,
               marginBottom: 20,
-              color: '#3E2723',
+              color: '#1A2E4A',
               fontFamily: '"Times New Roman", Times, serif'
             }}>
               Select Game Mode
@@ -470,10 +469,10 @@ export default function Start() {
                   padding: 20,
                   borderRadius: 16,
                   border: selectedMode === 'click'
-                    ? '2px solid #8B7355'
-                    : '2px solid rgba(139,115,85,0.3)',
+                    ? '2px solid #75AADB'
+                    : '2px solid rgba(117,170,219,0.3)',
                   background: selectedMode === 'click'
-                    ? 'rgba(139,115,85,0.1)'
+                    ? 'rgba(117,170,219,0.1)'
                     : 'rgba(255,255,255,0.5)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
@@ -500,24 +499,24 @@ export default function Start() {
                   margin: '8px 0 0 32px',
                   fontSize: '1rem',
                   lineHeight: 1.6,
-                  color: '#3E2723',
+                  color: '#1A2E4A',
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
                   See both responses side by side. Click on the response you think is human. Compare and analyze before making your choice.
                 </p>
               </div>
 
-              {/* Swipe Mode */}
-              <div
+              {/* Swipe Mode — disabled for now; re-enable by removing the `false &&` wrapper */}
+              {false && <div
                 onClick={() => setSelectedMode('swipe')}
                 style={{
                   padding: 20,
                   borderRadius: 16,
                   border: selectedMode === 'swipe'
-                    ? '2px solid #8B7355'
-                    : '2px solid rgba(139,115,85,0.3)',
+                    ? '2px solid #75AADB'
+                    : '2px solid rgba(117,170,219,0.3)',
                   background: selectedMode === 'swipe'
-                    ? 'rgba(139,115,85,0.1)'
+                    ? 'rgba(117,170,219,0.1)'
                     : 'rgba(255,255,255,0.5)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
@@ -544,12 +543,12 @@ export default function Start() {
                   margin: '8px 0 0 32px',
                   fontSize: '1rem',
                   lineHeight: 1.6,
-                  color: '#3E2723',
+                  color: '#1A2E4A',
                   fontFamily: '"Times New Roman", Times, serif'
                 }}>
                   See one response at a time. Swipe left for AI. Swipe right for Human. You can also use keyboard arrow keys <code>←</code> | <code>→</code>
                 </p>
-              </div>
+              </div>}
             </div>
           </section>
 
@@ -562,11 +561,11 @@ export default function Start() {
                 padding: '18px 48px',
                 fontSize: '1.3rem',
                 borderRadius: 999,
-                backgroundColor: canStart ? '#8B7355' : '#d0d7de',
-                color: canStart ? '#fff' : '#667085',
+                backgroundColor: canStart ? '#C4957A' : '#d0d7de',
+                color: canStart ? '#fff' : 'rgba(26,46,74,0.4)',
                 border: 'none',
                 cursor: canStart ? 'pointer' : 'not-allowed',
-                boxShadow: canStart ? '0 8px 24px rgba(139,115,85,0.35)' : 'none',
+                boxShadow: canStart ? '0 8px 24px rgba(196,149,122,0.35)' : 'none',
                 fontWeight: 700,
                 transition: 'all 0.3s ease',
                 fontFamily: '"Times New Roman", Times, serif'
@@ -574,13 +573,13 @@ export default function Start() {
               onMouseOver={(e) => {
                 if (canStart) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(139,115,85,0.45)';
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(196,149,122,0.45)';
                 }
               }}
               onMouseOut={(e) => {
                 if (canStart) {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(139,115,85,0.35)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(196,149,122,0.35)';
                 }
               }}
             >
@@ -590,7 +589,7 @@ export default function Start() {
               <p style={{
                 marginTop: 12,
                 fontSize: '0.9rem',
-                color: '#667085',
+                color: '#1A2E4A',
                 fontFamily: '"Times New Roman", Times, serif'
               }}>
                 Please sign in above to begin
