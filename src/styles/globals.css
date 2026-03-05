@@ -1,12 +1,19 @@
 /* Global styles */
 :root {
-  --primary-color: #0070f3;
-  --background-light: #ffffff;
+  --primary-color: #75AADB;
+  --color-navy: #1A2E4A;
+  --color-blue: #75AADB;
+  --color-offwhite: #F7F4EF;
+  --color-sage: #A8BFA8;
+  --color-clay: #C4957A;
+  --background-light: #F7F4EF;
   --background-dark: #1a1a1a;
-  --text-light: #000000;
+  --text-light: #1A2E4A;
   --text-dark: #ffffff;
-  --border-light: #ddd;
+  --border-light: rgba(117,170,219,0.3);
   --border-dark: #444;
+  --font-heading: 'Lora', 'Times New Roman', serif;
+  --font-body: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
@@ -19,14 +26,19 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-navy);
 }
 
 body {
   background-color: var(--background-light);
   color: var(--text-light);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 body.dark-mode {
@@ -77,10 +89,10 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
   color: white;
 }
 
-/* Focus styles */
-:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+/* Focus styles — Columbia Blue, WCAG 2.0 compliant */
+:focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 3px;
 }
 
 /* Utility classes */

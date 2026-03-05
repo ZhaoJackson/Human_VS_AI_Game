@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { isInIframe, handleIframeAuth } from '../src/utils/iframeDetector';
@@ -80,11 +81,13 @@ export default function Home() {
   }, [user]);
 
   return (
+    <>
+    <Head><title>Turing Test | Can you tell a human from an AI? — Social Intervention Group</title></Head>
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
       color: '#1A2E4A',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: '"Source Sans 3", sans-serif'
     }}>
       {/* Header */}
       <header style={{
@@ -94,9 +97,23 @@ export default function Home() {
         alignItems: 'center',
         background: '#1A2E4A',
       }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>
-          Turing Test by Social Intervention Group
-        </div>
+        <Link
+          href="/"
+          aria-label="Turing Test – go to home page"
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            fontFamily: 'Lora, "Times New Roman", serif',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: 4,
+            outline: 'none',
+          }}
+          onFocus={(e) => { e.currentTarget.style.outline = '3px solid #F7F4EF'; e.currentTarget.style.outlineOffset = '4px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          Turing Test
+        </Link>
         {!isLoading && (
           user ? (
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -171,9 +188,9 @@ export default function Home() {
             lineHeight: 1.2,
             color: '#fff',
             textShadow: '0 4px 30px rgba(0,0,0,0.5)',
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: 'Lora, "Times New Roman", serif'
           }}>
-            Can you tell a human from an AI?
+            Can you tell an AI from a human?
           </h1>
 
           <p style={{
@@ -184,7 +201,7 @@ export default function Home() {
             margin: '0 auto 50px',
             lineHeight: 1.6,
             textShadow: '0 2px 20px rgba(0,0,0,0.5)',
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}>
             Turing Test of experiences living with mental health conditions
           </p>
@@ -202,9 +219,9 @@ export default function Home() {
               cursor: 'pointer',
               boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
               transition: 'all 0.3s ease',
-              fontFamily: '"Times New Roman", Times, serif'
-            }}
-            onMouseOver={(e) => {
+            fontFamily: '"Source Sans 3", sans-serif'
+          }}
+          onMouseOver={(e) => {
               e.currentTarget.style.transform = 'translateY(-4px)';
               e.currentTarget.style.boxShadow = '0 15px 50px rgba(0,0,0,0.5)';
             }}
@@ -231,7 +248,7 @@ export default function Home() {
             fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
             fontWeight: 700,
             marginBottom: 30,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: 'Lora, "Times New Roman", serif'
           }}>
             HOW TO PLAY
           </h2>
@@ -241,7 +258,7 @@ export default function Home() {
             lineHeight: 1.8,
             color: '#1A2E4A',
             marginBottom: 20,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}>
             You&apos;ll see two descriptions of what it&apos;s like to live with a mental health condition. One is from a real person. One is AI-generated.
           </p>
@@ -251,7 +268,7 @@ export default function Home() {
             lineHeight: 1.8,
             color: '#1A2E4A',
             marginBottom: 20,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}>
             <strong>Your job?</strong> Figure out which is which.
           </p>
@@ -260,7 +277,7 @@ export default function Home() {
             fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
             lineHeight: 1.8,
             color: '#1A2E4A',
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}>
             We&apos;ll show you the answers after a round of 3 prompts.
           </p>
@@ -320,7 +337,7 @@ export default function Home() {
               fontWeight: 700,
               marginBottom: 20,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: 'Lora, "Times New Roman", serif'
             }}>
               Why Play?
             </h3>
@@ -328,7 +345,7 @@ export default function Home() {
               fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
               lineHeight: 1.8,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               As AI gets better at mimicking human writing, spotting the difference is becoming a valuable skill, especially in sensitive topics like mental health. What feels human to you?
             </p>
@@ -341,7 +358,7 @@ export default function Home() {
               fontWeight: 700,
               marginBottom: 20,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: 'Lora, "Times New Roman", serif'
             }}>
               How It Works
             </h3>
@@ -350,7 +367,7 @@ export default function Home() {
               lineHeight: 1.8,
               color: '#1A2E4A',
               marginBottom: 20,
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               Each round gives you 3 prompts with real responses from Columbia University students mixed with AI-generated ones.
             </p>
@@ -358,7 +375,7 @@ export default function Home() {
               fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
               lineHeight: 1.8,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               Use your intuition. Look for the little things that make each response feel human (or not). Then make your choice.
             </p>
@@ -372,7 +389,7 @@ export default function Home() {
             fontWeight: 700,
             marginTop: 50,
             marginBottom: 0,
-            fontFamily: '"Times New Roman", Times, serif',
+            fontFamily: '"Source Sans 3", sans-serif',
             textAlign: 'center'
           }}>
             Ready to test your skills?
@@ -392,7 +409,7 @@ export default function Home() {
               fontSize: '1rem',
               lineHeight: 1.6,
               opacity: 0.95,
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               This research tool is designed and maintained by the{' '}
               <strong>Social Intervention Group</strong> at{' '}
@@ -458,5 +475,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

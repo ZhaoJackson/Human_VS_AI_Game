@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useUser } from '@auth0/nextjs-auth0/client';
@@ -524,27 +526,36 @@ export default function Game() {
       alignItems: 'center',
       background: '#1A2E4A',
     }}>
-      <div style={{
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        fontFamily: '"Times New Roman", Times, serif',
-        color: '#fff'
-      }}>
-        Turing Test by Social Intervention Group
-      </div>
+      <Link
+        href="/"
+        aria-label="Turing Test – go to home page"
+        style={{
+          fontSize: '1.5rem',
+          fontWeight: 700,
+          fontFamily: 'Lora, "Times New Roman", serif',
+          color: '#fff',
+          textDecoration: 'none',
+          borderRadius: 4,
+          outline: 'none',
+        }}
+        onFocus={(e) => { e.currentTarget.style.outline = '3px solid #F7F4EF'; e.currentTarget.style.outlineOffset = '4px'; }}
+        onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+      >
+        Turing Test
+      </Link>
       {finished ? (
         <button
           onClick={() => router.push('/')}
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#C4957A',
-            color: '#fff',
+            background: '#F7F4EF',
+            color: '#1A2E4A',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.95rem',
             fontWeight: 600,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}
         >
           Home
@@ -555,13 +566,13 @@ export default function Game() {
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#C4957A',
-            color: '#fff',
+            background: '#F7F4EF',
+            color: '#1A2E4A',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.95rem',
             fontWeight: 600,
-            fontFamily: '"Times New Roman", Times, serif'
+            fontFamily: '"Source Sans 3", sans-serif'
           }}
         >
           Settings
@@ -585,6 +596,7 @@ export default function Game() {
         color: darkMode ? '#e2e8f0' : '#1A2E4A',
       }}
     >
+      <Head><title>Results — Turing Test | Social Intervention Group</title></Head>
       {renderHeader()}
       {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
 
@@ -848,6 +860,7 @@ export default function Game() {
         background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)'
       }}
     >
+      <Head><title>Play — Turing Test | Social Intervention Group</title></Head>
       {renderHeader()}
       {showSettings && <GameSettings onClose={() => setShowSettings(false)} />}
 
@@ -1007,6 +1020,9 @@ export default function Game() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -30 }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Select Option A as the human response"
                     style={{
                       padding: '28px 24px',
                       background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
@@ -1015,16 +1031,21 @@ export default function Game() {
                       boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.08)',
                       cursor: 'pointer',
                       display: 'grid',
-                      gap: 16
+                      gap: 16,
+                      outline: 'none',
                     }}
                     onClick={() => handleClick(true)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(true); } }}
+                    onFocus={(e) => { e.currentTarget.style.outline = '3px solid #1A2E4A'; e.currentTarget.style.outlineOffset = '3px'; }}
+                    onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
                   >
                     <span
                       style={{
                         fontSize: '0.85rem',
+                        fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: 1.6,
-                        color: darkMode ? '#75AADB' : '#75AADB'
+                        color: darkMode ? '#e2e8f0' : '#1A2E4A',
                       }}
                     >
                       Option A
@@ -1038,6 +1059,9 @@ export default function Game() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -30 }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Select Option B as the human response"
                     style={{
                       padding: '28px 24px',
                       background: darkMode ? 'rgba(15,23,42,0.8)' : '#fff',
@@ -1046,16 +1070,21 @@ export default function Game() {
                       boxShadow: darkMode ? '0 24px 40px rgba(15,23,42,0.45)' : '0 24px 50px rgba(15,23,42,0.08)',
                       cursor: 'pointer',
                       display: 'grid',
-                      gap: 16
+                      gap: 16,
+                      outline: 'none',
                     }}
                     onClick={() => handleClick(false)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(false); } }}
+                    onFocus={(e) => { e.currentTarget.style.outline = '3px solid #1A2E4A'; e.currentTarget.style.outlineOffset = '3px'; }}
+                    onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
                   >
                     <span
                       style={{
                         fontSize: '0.85rem',
+                        fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: 1.6,
-                        color: '#75AADB'
+                        color: darkMode ? '#e2e8f0' : '#1A2E4A',
                       }}
                     >
                       Option B

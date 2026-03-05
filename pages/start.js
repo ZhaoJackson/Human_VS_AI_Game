@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
 import { buildTripletIds } from '../src/lib/sampling';
@@ -109,6 +111,8 @@ export default function Start() {
   }, [user, isLoading]);
 
   return (
+    <>
+    <Head><title>Start a Round — Turing Test | Social Intervention Group</title></Head>
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)'
@@ -121,26 +125,35 @@ export default function Start() {
         alignItems: 'center',
         background: '#1A2E4A',
       }}>
-        <div style={{
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          fontFamily: '"Times New Roman", Times, serif',
-          color: '#fff'
-        }}>
-          Turing Test by Social Intervention Group
-        </div>
+        <Link
+          href="/"
+          aria-label="Turing Test – go to home page"
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            fontFamily: 'Lora, "Times New Roman", serif',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: 4,
+            outline: 'none',
+          }}
+          onFocus={(e) => { e.currentTarget.style.outline = '3px solid #F7F4EF'; e.currentTarget.style.outlineOffset = '4px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          Turing Test
+        </Link>
         <button
           onClick={() => setShowSettings(true)}
           style={{
             padding: '10px 24px',
             borderRadius: 999,
-            background: '#C4957A',
-            color: '#fff',
+            background: '#F7F4EF',
+            color: '#1A2E4A',
             border: 'none',
             cursor: 'pointer',
             fontSize: '0.95rem',
             fontWeight: 600,
-            fontFamily: '"Times New Roman", Times, serif',
+            fontFamily: '"Source Sans 3", sans-serif',
           }}
         >
           Settings
@@ -204,7 +217,7 @@ export default function Start() {
                   fontWeight: 700,
                   marginBottom: 12,
                   color: '#1A2E4A',
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: 'Lora, "Times New Roman", serif'
                 }}>
                   Sign In Required
                 </h2>
@@ -213,7 +226,7 @@ export default function Start() {
                   marginBottom: 24,
                   color: '#1A2E4A',
                   lineHeight: 1.6,
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: '"Source Sans 3", sans-serif'
                 }}>
                   Please sign in with your Columbia email to continue
                 </p>
@@ -231,7 +244,7 @@ export default function Start() {
                     fontSize: '1.1rem',
                     fontWeight: 600,
                     boxShadow: '0 4px 12px rgba(196,149,122,0.3)',
-                    fontFamily: '"Times New Roman", Times, serif',
+                    fontFamily: '"Source Sans 3", sans-serif',
                     cursor: 'pointer'
                   }}
                 >
@@ -290,7 +303,7 @@ export default function Start() {
               fontWeight: 700,
               marginBottom: 20,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: 'Lora, "Times New Roman", serif'
             }}>
               How to Play
             </h2>
@@ -299,7 +312,7 @@ export default function Start() {
               lineHeight: 1.8,
               color: '#1A2E4A',
               paddingLeft: 24,
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               <li style={{ marginBottom: 12 }}>
                 You will see responses to mental health-related questions
@@ -326,7 +339,7 @@ export default function Start() {
               fontWeight: 700,
               marginBottom: 20,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: 'Lora, "Times New Roman", serif'
             }}>
               Choose a Topic
             </h2>
@@ -335,7 +348,7 @@ export default function Start() {
               marginBottom: 12,
               fontSize: '1rem',
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: '"Source Sans 3", sans-serif'
             }}>
               Select a mental health topic for this round:
             </label>
@@ -350,7 +363,7 @@ export default function Start() {
                 borderRadius: 12,
                 border: '1px solid rgba(117,170,219,0.4)',
                 backgroundColor: '#fff',
-                fontFamily: '"Times New Roman", Times, serif',
+                fontFamily: '"Source Sans 3", sans-serif',
                 cursor: 'pointer'
               }}
             >
@@ -378,7 +391,7 @@ export default function Start() {
                   fontWeight: 700,
                   marginBottom: 8,
                   color: '#1A2E4A',
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: 'Lora, "Times New Roman", serif'
                 }}>
                   Number of Prompts
                 </h2>
@@ -386,7 +399,7 @@ export default function Start() {
                   fontSize: '0.95rem',
                   color: '#1A2E4A',
                   marginBottom: 20,
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: '"Source Sans 3", sans-serif'
                 }}>
                   How many prompts per round? (default: 3)
                   {selectedTheme && (
@@ -414,7 +427,7 @@ export default function Start() {
                         fontWeight: 700,
                         fontSize: '1rem',
                         cursor: 'pointer',
-                        fontFamily: '"Times New Roman", Times, serif',
+                        fontFamily: '"Source Sans 3", sans-serif',
                         transition: 'all 0.15s ease'
                       }}
                     >
@@ -436,7 +449,7 @@ export default function Start() {
                   color: '#92400e',
                   fontSize: '0.88rem',
                   lineHeight: 1.55,
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: '"Source Sans 3", sans-serif'
                 }}>
                   <strong>Note:</strong> You chose {numPrompts}, but <em>{selectedTheme}</em> only has {categoryMax} prompt{categoryMax !== 1 ? 's' : ''}. The round will play all {categoryMax} available.
                 </div>
@@ -457,7 +470,7 @@ export default function Start() {
               fontWeight: 700,
               marginBottom: 20,
               color: '#1A2E4A',
-              fontFamily: '"Times New Roman", Times, serif'
+              fontFamily: 'Lora, "Times New Roman", serif'
             }}>
               Select Game Mode
             </h2>
@@ -490,7 +503,7 @@ export default function Start() {
                     fontSize: '1.3rem',
                     fontWeight: 600,
                     margin: 0,
-                    fontFamily: '"Times New Roman", Times, serif'
+                    fontFamily: '"Source Sans 3", sans-serif'
                   }}>
                     Click Mode
                   </h3>
@@ -500,7 +513,7 @@ export default function Start() {
                   fontSize: '1rem',
                   lineHeight: 1.6,
                   color: '#1A2E4A',
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: '"Source Sans 3", sans-serif'
                 }}>
                   See both responses side by side. Click on the response you think is human. Compare and analyze before making your choice.
                 </p>
@@ -534,7 +547,7 @@ export default function Start() {
                     fontSize: '1.3rem',
                     fontWeight: 600,
                     margin: 0,
-                    fontFamily: '"Times New Roman", Times, serif'
+                    fontFamily: '"Source Sans 3", sans-serif'
                   }}>
                     Swipe Mode
                   </h3>
@@ -544,7 +557,7 @@ export default function Start() {
                   fontSize: '1rem',
                   lineHeight: 1.6,
                   color: '#1A2E4A',
-                  fontFamily: '"Times New Roman", Times, serif'
+                  fontFamily: '"Source Sans 3", sans-serif'
                 }}>
                   See one response at a time. Swipe left for AI. Swipe right for Human. You can also use keyboard arrow keys <code>←</code> | <code>→</code>
                 </p>
@@ -568,7 +581,7 @@ export default function Start() {
                 boxShadow: canStart ? '0 8px 24px rgba(196,149,122,0.35)' : 'none',
                 fontWeight: 700,
                 transition: 'all 0.3s ease',
-                fontFamily: '"Times New Roman", Times, serif'
+                fontFamily: '"Source Sans 3", sans-serif'
               }}
               onMouseOver={(e) => {
                 if (canStart) {
@@ -590,7 +603,7 @@ export default function Start() {
                 marginTop: 12,
                 fontSize: '0.9rem',
                 color: '#1A2E4A',
-                fontFamily: '"Times New Roman", Times, serif'
+                fontFamily: '"Source Sans 3", sans-serif'
               }}>
                 Please sign in above to begin
               </p>
@@ -599,5 +612,6 @@ export default function Start() {
         </div>
       </div>
     </div>
+    </>
   );
 }

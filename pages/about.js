@@ -1,12 +1,15 @@
 import Link from 'next/link';
+import Head from 'next/head';
 
 export default function About() {
   return (
+    <>
+    <Head><title>About — Turing Test | Social Intervention Group</title></Head>
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #1A2E4A 0%, #75AADB 50%, #F7F4EF 100%)',
       color: '#1A2E4A',
-      fontFamily: '"Times New Roman", Times, serif'
+      fontFamily: 'Lora, "Times New Roman", serif'
     }}>
       {/* Header */}
       <header style={{
@@ -16,17 +19,28 @@ export default function About() {
         alignItems: 'center',
         background: '#1A2E4A',
       }}>
-        <div style={{
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          color: '#fff'
-        }}>
-          Turing Test by Social Intervention Group
-        </div>
+        <Link
+          href="/"
+          aria-label="Turing Test – go to home page"
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            fontFamily: 'Lora, "Times New Roman", serif',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: 4,
+            outline: 'none',
+          }}
+          onFocus={(e) => { e.currentTarget.style.outline = '3px solid #F7F4EF'; e.currentTarget.style.outlineOffset = '4px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          Turing Test
+        </Link>
         <Link href="/" style={{
           padding: '10px 24px',
           borderRadius: 999,
-          background: '#C4957A',
+          background: '#F7F4EF',
+          color: '#1A2E4A',
           color: '#fff',
           textDecoration: 'none',
           fontSize: '0.95rem',
@@ -262,5 +276,6 @@ export default function About() {
         </div>
       </main>
     </div>
+    </>
   );
 }
