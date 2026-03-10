@@ -611,6 +611,28 @@ export default function Start() {
           </section>
         </div>
       </div>
+      <footer style={{
+        padding: '24px 40px',
+        textAlign: 'center',
+        borderTop: '1px solid rgba(26,46,74,0.15)',
+      }}>
+        <p style={{
+          fontSize: '0.9rem',
+          color: '#1A2E4A',
+          margin: 0,
+          fontFamily: '"Source Sans 3", sans-serif',
+        }}>
+          This project was originally funded by the{' '}
+          <a
+            href="https://fourthpurpose.columbia.edu/news/columbia-university-mental-health-initiative-capturing-perspectives-mental-health"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#75AADB', textDecoration: 'none', borderBottom: '1px solid rgba(117,170,219,0.5)' }}
+          >
+            Columbia University Mental Health Initiative
+          </a>
+        </p>
+      </footer>
     </div>
     </>
   );

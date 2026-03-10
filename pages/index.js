@@ -427,6 +427,22 @@ export default function Home() {
         borderTop: '1px solid rgba(26,46,74,0.2)',
         textAlign: 'center'
       }}>
+        <p style={{
+          fontSize: '0.9rem',
+          color: '#1A2E4A',
+          marginBottom: 16,
+          fontFamily: '"Source Sans 3", sans-serif',
+        }}>
+          This project was originally funded by the{' '}
+          <a
+            href="https://fourthpurpose.columbia.edu/news/columbia-university-mental-health-initiative-capturing-perspectives-mental-health"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#75AADB', textDecoration: 'none', borderBottom: '1px solid rgba(117,170,219,0.5)' }}
+          >
+            Columbia University Mental Health Initiative
+          </a>
+        </p>
         <div style={{
           maxWidth: 1200,
           margin: '0 auto',
