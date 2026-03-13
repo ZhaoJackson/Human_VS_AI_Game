@@ -1106,8 +1106,9 @@ export default function Game() {
   );
 }
 
-// When AUTH_ENABLED=true, protect the route via Auth0 server-side guard.
-// When false (default), the page is publicly accessible.
+// Server-side props — open to all when AUTH_ENABLED=false (default).
+// To re-enable Columbia login: set NEXT_PUBLIC_AUTH_ENABLED=true in Vercel env vars,
+// then swap the line below back to: withPageAuthRequired()
 export const getServerSideProps = AUTH_ENABLED
   ? withPageAuthRequired()
   : async () => ({ props: {} });
