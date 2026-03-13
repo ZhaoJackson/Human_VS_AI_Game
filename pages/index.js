@@ -5,6 +5,8 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { isInIframe, handleIframeAuth } from '../src/utils/iframeDetector';
 
+const AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+
 export default function Home() {
   const router = useRouter();
   const { user, isLoading } = useUser();
@@ -114,7 +116,8 @@ export default function Home() {
         >
           Turing Test
         </Link>
-        {!isLoading && (
+        {/* Auth header buttons — only shown when AUTH_ENABLED=true */}
+        {AUTH_ENABLED && !isLoading && (
           user ? (
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>{user.email}</span>

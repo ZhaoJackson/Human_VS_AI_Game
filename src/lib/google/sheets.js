@@ -69,22 +69,28 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
 
     const {
         roundId,
+        participantId,
         category,
         score,
         accuracyPct,
         avgTimeSeconds,
         questionHistory = [],
-        session,
     } = payload;
 
-    const timestamp = new Date().toISOString();
-    const uni = session.email?.split('@')[0] || '';
-    const first = session.given_name || session.name?.split(' ')?.[0] || '';
-    const last = session.family_name || session.name?.split(' ')?.slice(1).join(' ') || '';
+    // Timestamp in Eastern Time (America/New_York)
+    const timestamp = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    }).format(new Date()) + ' ET';
 
-    // Dynamic per-question columns — one block of 6 per question, for N questions
-    // Columns: Prompt N | Human N | AI N | AI Source N | User Choice N | Result N
-    const qCols = questionHistory.flatMap(q => [
+    // Dynamic per-question columns — one block of 6 per question:
+    // Prompt N | Human N | AI N | AI Source N | User Choice N | Result N
+    const qCols = questionHistory.flatMap((q) => [
         q.prompt        || '',
         q.humanResponse || '',
         q.aiResponse    || '',
@@ -93,17 +99,14 @@ export async function appendRound(spreadsheetId, sheetName, payload) {
         String(q.correct),
     ]);
 
-    // Final column order:
-    // Timestamp | Round ID | Email | UNI | First Name | Last Name | Category |
-    // Score | Accuracy Percentage | Average Time (sec) |
+    // Column order:
+    // Timestamp | Round ID | Participant ID | Category |
+    // Score | Accuracy % | Average Time (sec) |
     // [Prompt N | Human N | AI N | AI Source N | User Choice N | Result N] × N
     const row = [
         timestamp,
         roundId,
-        session.email || '',
-        uni,
-        first,
-        last,
+        participantId || '',
         category,
         score,
         accuracyPct,

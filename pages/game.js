@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+// Auth import kept for re-activation; only used when AUTH_ENABLED=true
 import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { data } from '../src/features/game/data/turing_data';
@@ -10,10 +11,25 @@ import { pickFromPool, clearPool, buildTripletIds, resolveTriplet } from '../src
 import { useGame } from '../src/features/game/contexts/GameContext';
 import { useSession } from '../src/features/game/contexts/SessionContext';
 import GameSettings from '../src/components/game/GameSettings';
+
+const AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+
 export default function Game() {
   const { darkMode, timeLimit, fontSize } = useGame();
+  // user is kept for re-activation; not required when AUTH_ENABLED=false
   const { user } = useUser();
   const { sessionStats, addRoundToSession, clearSession } = useSession();
+
+  // Stable participant ID — generated once per browser session so the same person
+  // can be linked across multiple rounds and the feedback form.
+  const [participantId] = useState(() => {
+    if (typeof window === 'undefined') return crypto.randomUUID();
+    const saved = sessionStorage.getItem('turing:participantId');
+    if (saved) return saved;
+    const newId = crypto.randomUUID();
+    sessionStorage.setItem('turing:participantId', newId);
+    return newId;
+  });
 
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -72,73 +88,38 @@ export default function Game() {
     return ((score / totalQuestions) * 100).toFixed(1);
   }, [score, totalQuestions]);
 
+  // feedbackFormUrl kept for legacy/re-activation use with AUTH_ENABLED=true
   const feedbackFormUrl = useMemo(() => {
     if (!roundId) return '';
     const baseUrl = process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL;
     if (!baseUrl) return '';
-
     try {
       const url = new URL(baseUrl);
-      const email = user?.email || '';
-      const firstName = user?.given_name || (user?.name ? user.name.split(' ')[0] : '');
-      const lastName = user?.family_name || (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
-      const localPart = email ? email.split('@')[0] : '';
-      const themeLabel = selectedTheme || 'Mixed prompts';
-
-      const mappings = {
-        email: process.env.NEXT_PUBLIC_FEEDBACK_FORM_EMAIL_FIELD,
-        firstName: process.env.NEXT_PUBLIC_FEEDBACK_FORM_FIRST_NAME_FIELD,
-        lastName: process.env.NEXT_PUBLIC_FEEDBACK_FORM_LAST_NAME_FIELD,
-        uni: process.env.NEXT_PUBLIC_FEEDBACK_FORM_UNI_FIELD,
-        category: process.env.NEXT_PUBLIC_FEEDBACK_FORM_CATEGORY_FIELD || 'category',
-        roundId: process.env.NEXT_PUBLIC_FEEDBACK_FORM_ROUND_ID_FIELD || 'round_id',
-      };
-
-      if (mappings.email && email) url.searchParams.set(mappings.email, email);
-      if (mappings.firstName && firstName) url.searchParams.set(mappings.firstName, firstName);
-      if (mappings.lastName && lastName) url.searchParams.set(mappings.lastName, lastName);
-      if (mappings.uni && localPart) url.searchParams.set(mappings.uni, localPart);
-
-      url.searchParams.set(mappings.category, themeLabel);
-      url.searchParams.set(mappings.roundId, roundId);
-
+      const participantField = process.env.NEXT_PUBLIC_FEEDBACK_FORM_PARTICIPANT_ID_FIELD;
+      const roundField = process.env.NEXT_PUBLIC_FEEDBACK_FORM_ROUND_ID_FIELD || 'round_id';
+      if (participantField) url.searchParams.set(participantField, participantId);
+      url.searchParams.set(roundField, roundId);
       return url.toString();
     } catch (error) {
       console.warn('Invalid NEXT_PUBLIC_FEEDBACK_FORM_URL', error);
       return '';
     }
-  }, [roundId, selectedTheme, user]);
+  }, [roundId, participantId]);
 
-  // Feedback collection form — reuses the existing NEXT_PUBLIC_FEEDBACK_FORM_* env vars
-  // (same form URL, same first/last name entry IDs already configured in .env.local).
-  // Email entry ID goes in NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD once known.
+  // feedbackCollectionUrl — prefills participantId so responses link back to game rounds.
   const feedbackCollectionUrl = useMemo(() => {
     const DIRECT_LINK = 'https://forms.gle/vLRUDWqak7AjEgb99';
-    // Reuse the base URL already configured for the same form
     const baseUrl = process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL;
-    if (!baseUrl || !user) return DIRECT_LINK;
-
+    if (!baseUrl) return DIRECT_LINK;
     try {
       const url = new URL(baseUrl);
-      const email     = user.email || '';
-      const firstName = user.given_name || (user.name ? user.name.split(' ')[0] : '');
-      const lastName  = user.family_name || (user.name ? user.name.split(' ').slice(1).join(' ') : '');
-
-      // Email — dedicated entry ID (add NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD to .env.local)
-      const emailField = process.env.NEXT_PUBLIC_FEEDBACK_COLLECTION_EMAIL_FIELD;
-      // First/Last name — reuse IDs already in .env.local
-      const firstField = process.env.NEXT_PUBLIC_FEEDBACK_FORM_FIRST_NAME_FIELD;
-      const lastField  = process.env.NEXT_PUBLIC_FEEDBACK_FORM_LAST_NAME_FIELD;
-
-      if (emailField && email)     url.searchParams.set(emailField, email);
-      if (firstField && firstName) url.searchParams.set(firstField, firstName);
-      if (lastField  && lastName)  url.searchParams.set(lastField,  lastName);
-
+      const participantField = process.env.NEXT_PUBLIC_FEEDBACK_FORM_PARTICIPANT_ID_FIELD;
+      if (participantField) url.searchParams.set(participantField, participantId);
       return url.toString();
     } catch {
       return DIRECT_LINK;
     }
-  }, [user]);
+  }, [participantId]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -435,12 +416,14 @@ export default function Game() {
         },
         body: JSON.stringify({
           roundId,
+          participantId,
           category,
           score,
           accuracyPct: accuracyForApi,
           avgTimeSeconds: avgTimeForApi,
           questionHistory,
-          user,
+          // user kept for re-activation when AUTH_ENABLED=true
+          ...(AUTH_ENABLED && user ? { user } : {}),
         }),
         signal: controller.signal,
       });
@@ -1123,4 +1106,8 @@ export default function Game() {
   );
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// When AUTH_ENABLED=true, protect the route via Auth0 server-side guard.
+// When false (default), the page is publicly accessible.
+export const getServerSideProps = AUTH_ENABLED
+  ? withPageAuthRequired()
+  : async () => ({ props: {} });

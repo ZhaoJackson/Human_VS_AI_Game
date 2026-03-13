@@ -8,12 +8,16 @@ import { buildTripletIds } from '../src/lib/sampling';
 import GameSettings from '../src/components/game/GameSettings';
 import { isInIframe } from '../src/utils/iframeDetector';
 
+// Set NEXT_PUBLIC_AUTH_ENABLED=true in .env.local to re-enable Columbia login
+const AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+
 export default function Start() {
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState('');
   const [numPrompts, setNumPrompts] = useState(3);
   const [selectedMode, setSelectedMode] = useState('click');
   const [showSettings, setShowSettings] = useState(false);
+  // user/error/isLoading kept for re-activation; not required when AUTH_ENABLED=false
   const { user, error, isLoading } = useUser();
   const authError = router.query.auth === 'domain';
 
@@ -42,7 +46,8 @@ export default function Start() {
   const exceedsMax = selectedTheme && numPrompts > categoryMax;
   const effectivePrompts = exceedsMax ? categoryMax : numPrompts;
 
-  const canStart = user && selectedMode;
+  // When AUTH_ENABLED=false anyone can start; when true, require a signed-in user
+  const canStart = AUTH_ENABLED ? (user && selectedMode) : !!selectedMode;
 
   const handleStart = () => {
     if (!canStart) return;
@@ -171,7 +176,11 @@ export default function Start() {
       }}>
         <div style={{ maxWidth: 700, width: '100%', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-          {/* Section 1: Authentication */}
+          {/* Section 1: Authentication
+              — Shown only when AUTH_ENABLED=true.
+              — Full Columbia login UI is preserved below; re-enable by setting
+                NEXT_PUBLIC_AUTH_ENABLED=true in .env.local */}
+          {AUTH_ENABLED && (
           <section style={{
             background: 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(20px)',
@@ -289,6 +298,7 @@ export default function Start() {
               </div>
             )}
           </section>
+          )}
 
           {/* Section 2: How to Play */}
           <section style={{
@@ -596,9 +606,9 @@ export default function Start() {
                 }
               }}
             >
-              {!user ? '🔒 Sign in to Start' : 'Start Round'}
+              {AUTH_ENABLED && !user ? '🔒 Sign in to Start' : 'Start Round'}
             </button>
-            {!user && (
+            {AUTH_ENABLED && !user && (
               <p style={{
                 marginTop: 12,
                 fontSize: '0.9rem',
